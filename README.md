@@ -1,5 +1,7 @@
 ## MultiColorSPR
 
+### Workflow
+
 Accessory software to perform multi-color single particle reconstruction from single molecule localization microscopy (SMLM) datasets. The provided software generates large dual-color particle libraries from high-throughput SMLM datasets, by performing the following steps: 
 
 - channel registration using 1) an affine and  2) a rigid linear translation
@@ -7,6 +9,8 @@ Accessory software to perform multi-color single particle reconstruction from si
 - particle filtering and image generation
 
 To generte a 3D reconstruction from the input 2D particle library, follow the instructions provided in `SPR from SMLM in Scipion`.
+
+Dual-color particle datasets are co-oriented (for proteins with a shared symmetry axis) and reconstructed in Scipion as described in `SPR from SMLM in Scipion`. Axial translation can be calculated using `CC_Image_Alignment.m`.
 
 ### General Information
 
