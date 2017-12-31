@@ -1,6 +1,12 @@
 ## MultiColorSPR
 
-Accessory software to perform multi-color single particle reconstruction from SMLM datasets
+Accessory software to perform multi-color single particle reconstruction from single molecule localization microscopy (SMLM) datasets. The provided software generates large dual-color particle libraries from high-throughput SMLM datasets, by performing the following steps: 
+
+- channel registration using 1) an affine and  2) a rigid linear translation
+- particle segmentation 
+- particle filtering and image generation
+
+To generte a 3D reconstruction from the input 2D particle library, follow the instructions provided in `SPR from SMLM in Scipion`.
 
 ### General Information
 
@@ -14,7 +20,7 @@ To install, copy the repository `MultiColorSPR`, open and run each script follow
 
 Test Datasets are available at https://doi.org/10.5281/zenodo.1127010
 
-Detailed instructions on how to process the test datasets can be found in `Documentation`. After downloading, unpack the file `test_data_for_MultiColorSPR.zip`. Either copy the folder into the `MultiColorSPR` folder or update the path information in the beginning of each script accodingly.
+Detailed instructions on how to process the test datasets can be found in `Documentation`. After downloading, unpack the file `test_data_for_MultiColorSPR.zip`. Either copy the folder into the `MultiColorSPR` folder or update the path information in the beginning of each script accordingly. Currently, each path is formatted for macOS.
 
 ### Dependencies 
 
@@ -25,4 +31,6 @@ Detailed instructions on how to process the test datasets can be found in `Docum
 3)	Within `particle_filter.m`, during the calculation of the shape descriptors, we use the code [fit_ellipse.m](https://ch.mathworks.com/matlabcentral/fileexchange/3215-fit-ellipse)
 
 4)	We further make use of the code for [efficient subpixel image registration by cross-correlation](https://ch.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation)
+
+
 
