@@ -1,8 +1,10 @@
 ## MultiColorSPR
 
+Accessory software to perform multi-color single particle reconstruction from single molecule localization microscopy (SMLM) datasets.
+
 ### Workflow
 
-Accessory software to perform multi-color single particle reconstruction from single molecule localization microscopy (SMLM) datasets. The provided software generates large dual-color particle libraries from high-throughput SMLM datasets, by performing the following steps: 
+The provided software generates large dual-color particle libraries from high-throughput SMLM datasets, by performing the following steps: 
 
 - channel registration using 1) an affine and  2) a rigid linear translation
 - particle segmentation 
