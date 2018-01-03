@@ -16,13 +16,13 @@ Dual-color particle datasets are co-oriented (for proteins with a shared symmetr
 
 ### General Information
 
-For pseudocode and processing instructions, see `Documentation`.
+- For pseudocode and processing instructions, see `Documentation`.
 
-The code was developed and tested in MATLAB2016b for Windows 10 and macOS 10.12.6 and requires no non-standard hardware.
+- The code was developed and tested in MATLAB2016b for Windows 10 and macOS 10.12.6 and requires no non-standard hardware.
 
-To install, copy the repository `MultiColorSPR`, open and run each script following the instructions therein and in `Documentation`. No install time.
+- To install, copy the repository `MultiColorSPR`, open and run each script following the instructions therein and in `Documentation`. No install time.
 
-Lateral drift correction was performed using the data management and analysis tool [B-Store](https://github.com/kmdouglass/bstore) 
+- Lateral drift correction was performed using the data management and analysis tool [B-Store](https://github.com/kmdouglass/bstore) 
 > Douglass, Kyle M., Sieben, Christian, Berliner, Niklas, & Manley, Suliana. (2017, December 18). B-Store (Version v1.2.1). Zenodo. [https://doi.org/10.5281/zenodo.1117843](https://doi.org/10.5281/zenodo.1117843)
 
 ### Demo
