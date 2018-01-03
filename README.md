@@ -22,6 +22,9 @@ The code was developed and tested in MATLAB2016b for Windows 10 and macOS 10.12.
 
 To install, copy the repository `MultiColorSPR`, open and run each script following the instructions therein and in `Documentation`. No install time.
 
+Lateral drift correction was performed using the data management and analysis tool [B-Store](https://github.com/kmdouglass/bstore) 
+> Douglass, Kyle M., Sieben, Christian, Berliner, Niklas, & Manley, Suliana. (2017, December 18). B-Store (Version v1.2.1). Zenodo. [https://doi.org/10.5281/zenodo.1117843](https://doi.org/10.5281/zenodo.1117843)
+
 ### Demo
 
 Test Datasets are available at https://doi.org/10.5281/zenodo.1127010
@@ -40,7 +43,7 @@ Detailed instructions on how to process the test datasets can be found in `Docum
 
 ### SMLM simulator
 
-We provide a simple particle simulator that generates localization maps from ground truth models. The folder `SMLM simulator` contains all required files as well as a ground truth example `GT_Cep152_Sas6.mat`. To simulate a particle dataset, open `simulate_particles_fromGT.m` and follow the steps described therein. 
+We provide a simple particle simulator that generates localization maps from ground truth models. The folder [SMLM simulator](https://github.com/christian-7/MultiColorSPR/tree/master/smlm_simulator) contains all required files as well as a ground truth example `GT_Cep152_Sas6.mat`. To simulate a particle dataset, open `simulate_particles_fromGT.m` and follow the steps described therein. 
 
 Briefly, the script will perform the following actions:
 
