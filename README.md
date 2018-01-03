@@ -12,7 +12,7 @@ The provided software generates large dual-color particle libraries from high-th
 
 To generte a 3D reconstruction from the input 2D particle library, follow the instructions provided in `SPR from SMLM in Scipion`.
 
-Dual-color particle datasets are co-oriented (for proteins with a shared symmetry axis) and reconstructed in Scipion as described in `SPR from SMLM in Scipion`. Axial translation can be calculated using `CC_Image_Alignment.m`.
+Dual-color particle datasets are co-oriented (for proteins with a shared symmetry axis) and reconstructed in Scipion as described in `SPR from SMLM in Scipion`. Axial translation can be calculated using `CC_Image_Alignment.m` and tested using the smulated dataset in `test_data_9_fold`.
 
 ### General Information
 
