@@ -38,5 +38,19 @@ Detailed instructions on how to process the test datasets can be found in `Docum
 
 4)	We further make use of the code for [efficient subpixel image registration by cross-correlation](https://ch.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation)
 
+### SMLM simulator
+
+We provide a simple particle simulator that generates localization maps from ground truth models. The folder `SMLM simulator` contains all required files as well as a ground truth example `Cep152_Sas6_GT.mat`. To simulate a particle dataset, open `batch_simulate.m` an follow the steps described therein. 
+
+Briefly, the script will perform the following actions:
+
+- load the ground truth model
+- choose simulation parameters (number of particles, number of frames,  labelling efficiency)
+- for each simulated structure, the ground truth is randomly rotated and reduced to a number of labels based on the labelling efficiency
+- populate each simulated label with localizations simulated according to measured distributions for photon count, localization precision, as well as on- and off-time
+- generate image library 
+
+
+
 
 
