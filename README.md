@@ -29,7 +29,7 @@ Dual-color particle datasets are co-oriented (for proteins with a shared symmetr
 
 Test Datasets are available at https://doi.org/10.5281/zenodo.1127010
 
-Detailed instructions on how to process the test datasets can be found in `Documentation`. After downloading, unpack the file `test_data_for_MultiColorSPR.zip`. Either copy the folder into the `MultiColorSPR` folder or update the path information in the beginning of each script accordingly. Currently, each path is formatted for macOS.
+Detailed instructions on how to process the test datasets can be found in [Documentation](https://github.com/christian-7/MultiColorSPR/blob/master/Documentation.pdf). After downloading, unpack the file `test_data_for_MultiColorSPR.zip`. Either copy the folder into the `MultiColorSPR` folder or update the path information in the beginning of each script accordingly. Currently, each path is formatted for macOS.
 
 ### Dependencies 
 
