@@ -16,7 +16,7 @@ Dual-color particle datasets are co-oriented (for proteins with a shared symmetr
 
 ### General Information
 
-- For pseudocode and processing instructions, see `Documentation`.
+- For pseudocode and processing instructions, see [Documentation](https://github.com/christian-7/MultiColorSPR/blob/master/Documentation.pdf).
 
 - The code was developed and tested in MATLAB2016b for Windows 10 and macOS 10.12.6 and requires no non-standard hardware.
 
