@@ -22,7 +22,7 @@ function varargout = drift_correct_GUI(varargin)
 
 % Edit the above text to modify the response to help drift_correct_GUI
 
-% Last Modified by GUIDE v2.5 07-Mar-2018 15:14:38
+% Last Modified by GUIDE v2.5 07-Mar-2018 21:53:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,9 +55,30 @@ function drift_correct_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for drift_correct_GUI
 handles.output = hObject;
 
-handles.locs_Ch1 = [];
-handles.locs_Ch2 = [];
-handles.Affine   = [];
+handles.locs_Ch1    = [];
+handles.locs_Ch2    = [];
+handles.Affine      = [];
+handles.pxlSizeFid  = 600;
+
+% Check if data is there
+
+    if isempty(handles.Affine)==0;
+    
+    set(handles.loadAffine,'BackgroundColor','green');
+    
+    else end
+    
+    if isempty(handles.locs_Ch1)==0;
+    
+    set(handles.openLocCh1,'BackgroundColor','green');
+    
+    else end
+    
+    if isempty(handles.locs_Ch2)==0;
+    
+    set(handles.openLocCh2,'BackgroundColor','green');
+    
+    else end
 
 % Update handles structure
 guidata(hObject, handles);
@@ -87,7 +108,7 @@ function openLocCh1_Callback(hObject, eventdata, handles)
 
 % Create a file dialog for images
 
-    [FileName_Ch1,Path_Ch1] = uigetfile({'*.csv';'*.dat'},'Select Loc file Ch1')
+    [FileName_Ch1,Path_Ch1] = uigetfile({'*.csv';'*.dat'},'Select Loc file Ch1');
     
     % Read the selected file into the variable
     
@@ -101,13 +122,29 @@ function openLocCh1_Callback(hObject, eventdata, handles)
     
     cd(Path_Ch1);
     
-    handles.locs_Ch1    = dlmread([Name_Ch1 ext_Ch1],',',1,0); 
+    handles.locs_Ch1          = dlmread([Name_Ch1 ext_Ch1],',',1,0); 
+    handles.locs_Ch1(:,end+1) = 1; % Channel ID
+
+    
+    % Read the header
+    
+    file = fopen([Name_Ch1 ext_Ch1]);
+    line = fgetl(file);
+    h    = regexp( line, ',', 'split' );
+
+    handles.xCol      = strmatch('x [nm]',h);
+    handles.yCol      = strmatch('y [nm]',h);
+    handles.frameCol  = strmatch('frame',h);
+    handles.deltaXCol = size(handles.locs_Ch1,2)+1;
+    handles.deltaYCol = size(handles.locs_Ch1,2)+2;
     
     if isempty(handles.locs_Ch1)==0;
     
     set(handles.openLocCh1,'BackgroundColor','green');
     
     else end
+    
+    disp('Localization file loaded');
 
     guidata(hObject, handles); % Update handles structure
 
@@ -123,7 +160,7 @@ function openLocCh2_Callback(hObject, eventdata, handles)
 
 % Create a file dialog for images
 
-    [FileName_Ch2,Path_Ch2] = uigetfile({'*.csv';'*.dat'},'Select Loc file Ch2')
+    [FileName_Ch2,Path_Ch2] = uigetfile({'*.csv';'*.dat'},'Select Loc file Ch2');
     
     % Read the selected file into the variable
     
@@ -138,13 +175,16 @@ function openLocCh2_Callback(hObject, eventdata, handles)
     cd(Path_Ch2);
     
     handles.locs_Ch2    = dlmread([Name_Ch2 ext_Ch2],',',1,0); 
+    handles.locs_Ch2(:,end+1) = 2; % Channel ID
     
     if isempty(handles.locs_Ch2)==0;
     
     set(handles.openLocCh2,'BackgroundColor','green');
     
     else end
-
+    
+    disp('Localization file loaded');
+    
     guidata(hObject, handles) % Update handles structure
 
 
@@ -171,5 +211,79 @@ function loadAffine_Callback(hObject, eventdata, handles)
     set(handles.loadAffine,'BackgroundColor','green');
     
     else end
-
+    
+    disp('Affine T loaded');
+    
     guidata(hObject, handles) % Update handles structure
+
+
+% --- Executes on button press in applyAffine.
+function applyAffine_Callback(hObject, eventdata, handles)
+% hObject    handle to applyAffine (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+moving = []; moving = handles.locs_Ch2(:,handles.xCol:handles.yCol);
+
+corrected_moving = transformPointsInverse(handles.Affine.T_lwm,moving);
+
+handles.locs_Ch2(:,handles.xCol) = corrected_moving(:,1);
+handles.locs_Ch2(:,handles.yCol) = corrected_moving(:,2);
+
+% Filter out of bound points
+
+locs_Ch2_filtered           = [];
+locs_Ch2_filtered           = handles.locs_Ch2(handles.locs_Ch2(:,handles.xCol)<1e5,1:end);
+handles.locs_Ch2            = locs_Ch2_filtered;
+
+set(handles.applyAffine,'BackgroundColor','green');
+
+guidata(hObject, handles) % Update handles structure
+    
+
+
+% --- Executes on button press in selectFid.
+function selectFid_Callback(hObject, eventdata, handles)
+% hObject    handle to selectFid (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+[handles.Fid_Ch1,handles.Fid_Ch2] = selectFiducial(handles.locs_Ch1,handles.locs_Ch2,handles);
+
+guidata(hObject, handles) % Update handles structure
+
+
+
+
+
+function pxlSizeFid_Callback(hObject, eventdata, handles)
+% hObject    handle to pxlSizeFid (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of pxlSizeFid as text
+%        str2double(get(hObject,'String')) returns contents of pxlSizeFid as a double
+
+
+handles = guidata(hObject);
+handles.pxlSizeFid = str2double(get(hObject,'String'))
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function pxlSizeFid_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pxlSizeFid (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
