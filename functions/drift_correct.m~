@@ -13,8 +13,8 @@ nameC1 = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data/huma
 locs_Ch1 = dlmread([name_Ch1 ext_Ch1],',',1,0);
 locs_Ch2 = dlmread([name_Ch2 ext_Ch2],',',1,0);
 
-locs_Ch1(:,end+1) = 1; % Channel ID
-locs_Ch2(:,end+1) = 2; % Channel ID
+locs_Ch1(:,end) = 1; % Channel ID
+locs_Ch2(:,end) = 2; % Channel ID
 
 % Load the header and find the right Columns
 
@@ -43,13 +43,14 @@ locs_Ch2(:,yCol) = corrected_moving(:,2);
 
 locs_Ch2_filtered = [];
 locs_Ch2_filtered = locs_Ch2(locs_Ch2(:,xCol)<1e5,1:end);
-locs_Ch2          = locs_Ch2_filtered;
+
+locs_Ch2 = locs_Ch2_filtered;
 
 %% Combine Channels and select fiducials from Image
 
 allLocs = vertcat(locs_Ch1,locs_Ch2);
 
-pxlsize = 600;
+pxlsize = 500;
 
 heigth  = round((max(allLocs(:,yCol))-min(allLocs(:,yCol)))/pxlsize);
 width   = round((max(allLocs(:,xCol))-min(allLocs(:,xCol)))/pxlsize);
@@ -109,7 +110,8 @@ close all
 
 for i = 1:max(Fid_Ch1(:,end));
     
-    figure('Position',[100 200 400 400])  
+    figure('Position',[100 200 400 400])
+    
     scatter(Fid_Ch1(Fid_Ch1(:,end)==i,frameCol),Fid_Ch1(Fid_Ch1(:,end)==i,yCol),1,'green');hold on;
     scatter(Fid_Ch2(Fid_Ch2(:,end)==i,frameCol),Fid_Ch2(Fid_Ch2(:,end)==i,yCol),1,'red');
     legend('Ch1','Ch2');
@@ -577,18 +579,17 @@ center_Ch1 = [];center_Ch2 = [];
 
 RegionID = 9;
 
-
-for i = selectedFid;
+for i = 0:max(Fid_Ch1(:,RegionID));
     
-    center_Ch1(i+1,1) = median(Fid_Ch1(Fid_Ch1(:,RegionID)==i,xCol));
-    center_Ch1(i+1,2) = median(Fid_Ch1(Fid_Ch1(:,RegionID)==i,yCol));
+    center_Ch1(i+1,1) = sum(Fid_Ch1(Fid_Ch1(:,RegionID)==i,xCol))/length(Fid_Ch1(Fid_Ch1(:,RegionID)==i,xCol));
+    center_Ch1(i+1,2) = sum(Fid_Ch1(Fid_Ch1(:,RegionID)==i,yCol))/length(Fid_Ch1(Fid_Ch1(:,RegionID)==i,yCol));
     
 end
 
-for i = selectedFid;;
+for i = 0:max(Fid_Ch2(:,RegionID));
     
-    center_Ch2(i+1,1) = median(Fid_Ch2(Fid_Ch2(:,RegionID)==i,xCol));
-    center_Ch2(i+1,2) = median(Fid_Ch2(Fid_Ch2(:,RegionID)==i,yCol));
+    center_Ch2(i+1,1) = sum(Fid_Ch2(Fid_Ch2(:,RegionID)==i,xCol))/length(Fid_Ch2(Fid_Ch2(:,RegionID)==i,xCol));
+    center_Ch2(i+1,2) = sum(Fid_Ch2(Fid_Ch2(:,RegionID)==i,yCol))/length(Fid_Ch2(Fid_Ch2(:,RegionID)==i,yCol));
     
 end
 
@@ -657,7 +658,6 @@ center_Ch2_corr(:,1) = center_Ch2(:,1) + mean(deltaXY(:,1));
 center_Ch2_corr(:,2) = center_Ch2(:,2) + mean(deltaXY(:,2));
 
 TRE = [];
-
 for i = 1:size(center_Ch1,1);
     
 TRE(:,i) = sqrt((center_Ch1(i,1)-center_Ch2_corr(i,1))^2 + (center_Ch1(i,2)-center_Ch2_corr(i,2))^2);
@@ -674,8 +674,8 @@ fprintf('\n -- Linear Transformation extracted and saved --\n')
 
 %% Apply Linear Translation and Save Data again
 
-locs_Ch2(:,xCol) = locs_Ch2(:,xCol) + mean(deltaXY(:,1));
-locs_Ch2(:,yCol) = locs_Ch2(:,yCol) + mean(deltaXY(:,2));
+locs_Ch1(:,xCol) = locs_Ch1(:,xCol) + mean(deltaXY(:,1));
+locs_Ch1(:,yCol) = locs_Ch1(:,yCol) + mean(deltaXY(:,2));
 
 NameCorrected = [nameC2 '_DC_corrected.csv'];
 
