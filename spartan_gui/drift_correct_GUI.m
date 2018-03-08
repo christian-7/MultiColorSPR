@@ -22,7 +22,7 @@ function varargout = drift_correct_GUI(varargin)
 
 % Edit the above text to modify the response to help drift_correct_GUI
 
-% Last Modified by GUIDE v2.5 08-Mar-2018 12:50:58
+% Last Modified by GUIDE v2.5 08-Mar-2018 22:43:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,11 @@ handles.locs_Ch2    = [];
 handles.Affine      = [];
 handles.pxlSizeFid  = 600;
 handles.selectedFid = 1;
+
+handles.NbrBins 	= 100;
+handles.FilterRad   = 200;
+handles.smoothF     = 100;
+handles.startFrame 	= 2000;
 
 % Check if data is there
 
@@ -138,8 +143,9 @@ function openLocCh1_Callback(hObject, eventdata, handles)
     handles.xCol      = strmatch('x [nm]',h);
     handles.yCol      = strmatch('y [nm]',h);
     handles.frameCol  = strmatch('frame',h);
-    handles.deltaXCol = size(handles.locs_Ch1,2)+1;
-    handles.deltaYCol = size(handles.locs_Ch1,2)+2;
+    handles.RegionID  = size(handles.locs_Ch1,2)+1; 
+    handles.deltaXCol = size(handles.locs_Ch1,2)+2;
+    handles.deltaYCol = size(handles.locs_Ch1,2)+3;
     
     if isempty(handles.locs_Ch1)==0;
     
@@ -290,12 +296,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in SelAvFid.
-function SelAvFid_Callback(hObject, eventdata, handles)
-% hObject    handle to SelAvFid (see GCBO)
+% --- Executes on button press in averageFid.
+function averageFid_Callback(hObject, eventdata, handles)
+% hObject    handle to averageFid (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
+
+[handles.Avg_Ch1_new, handles.Avg_Ch2_new] = averageFiducials(handles.selectedFid, handles);
+
+fprintf('\n -- Fiducial Tracks Averaged --\n')
+
+guidata(hObject, handles); % Update handles structure
 
 
 function UserselectedFid_Callback(hObject, eventdata, handles)
@@ -359,8 +372,141 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in findCoM.
-function findCoM_Callback(hObject, eventdata, handles)
-% hObject    handle to findCoM (see GCBO)
+% --- Executes on button press in splineFiduc.
+function splineFiduc_Callback(hObject, eventdata, handles)
+% hObject    handle to splineFiduc (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+[locs_Ch1, Fid_Ch1,locs_Ch2, Fid_Ch2] = splineFit_Fiducials(handles.Avg_Ch1_new,handles.Avg_Ch2_new,handles.NbrBins,handles.FilterRad,handles.smoothF, handles.startFrame,handles);
+
+handles.locs_Ch1    = locs_Ch1;
+handles.Fid_Ch1     = Fid_Ch1;
+handles.locs_Ch2    = locs_Ch2;
+handles.Fid_Ch2     = Fid_Ch2;
+
+fprintf('\n -- Data Drift Corrected --\n')
+
+guidata(hObject, handles); % Update handles structure
+
+function NbrBins_Callback(hObject, eventdata, handles)
+% hObject    handle to NbrBins (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of NbrBins as text
+%        str2double(get(hObject,'String')) returns contents of NbrBins as a double
+
+handles = guidata(hObject);
+handles.NbrBins = str2double(get(hObject,'String'))
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function NbrBins_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to NbrBins (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function FilterRad_Callback(hObject, eventdata, handles)
+% hObject    handle to FilterRad (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of FilterRad as text
+%        str2double(get(hObject,'String')) returns contents of FilterRad as a double
+
+handles = guidata(hObject);
+handles.FilterRad = str2double(get(hObject,'String'))
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function FilterRad_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FilterRad (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function smoothF_Callback(hObject, eventdata, handles)
+% hObject    handle to smoothF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of smoothF as text
+%        str2double(get(hObject,'String')) returns contents of smoothF as a double
+
+handles = guidata(hObject);
+handles.smoothF = str2double(get(hObject,'String'))
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function smoothF_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to smoothF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function startFrame_Callback(hObject, eventdata, handles)
+% hObject    handle to startFrame (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of startFrame as text
+%        str2double(get(hObject,'String')) returns contents of startFrame as a double
+handles = guidata(hObject);
+handles.startFrame = str2double(get(hObject,'String'))
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function startFrame_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to startFrame (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in rigidTrans.
+function rigidTrans_Callback(hObject, eventdata, handles)
+% hObject    handle to rigidTrans (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles
+
+handles = guidata(hObject);
+
+RigidTrans(handles.Fid_Ch1,handles.Fid_Ch2,handles)
+
+guidata(hObject, handles); % Update handles structure

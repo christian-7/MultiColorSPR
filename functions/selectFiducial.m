@@ -48,7 +48,7 @@ subset1 = allLocs(vx,1:end);
 vy      = find(subset1(:,handles.yCol)>ymin & subset1(:,handles.yCol)<ymax);
 subset2 = subset1(vy,1:end);
 
-subset2(:,end+1)=i; % Region ID
+subset2(:,handles.RegionID)=i; % Region ID
 
 Fid_Ch1 = vertcat(Fid_Ch1,subset2(subset2(:,end-1)==1,1:end));
 Fid_Ch2 = vertcat(Fid_Ch2,subset2(subset2(:,end-1)==2,1:end));
@@ -65,8 +65,8 @@ for i = 1:max(Fid_Ch1(:,end));
     
     figure('Position',[100 200 400 400])
     
-    scatter(Fid_Ch1(Fid_Ch1(:,end)==i,handles.frameCol),Fid_Ch1(Fid_Ch1(:,end)==i,handles.yCol),1,'green');hold on;
-    scatter(Fid_Ch2(Fid_Ch2(:,end)==i,handles.frameCol),Fid_Ch2(Fid_Ch2(:,end)==i,handles.yCol),1,'red');
+    scatter(Fid_Ch1(Fid_Ch1(:,handles.RegionID)==i,handles.frameCol),Fid_Ch1(Fid_Ch1(:,handles.RegionID)==i,handles.yCol),1,'green');hold on;
+    scatter(Fid_Ch2(Fid_Ch2(:,handles.RegionID)==i,handles.frameCol),Fid_Ch2(Fid_Ch2(:,handles.RegionID)==i,handles.yCol),1,'red');
     
     legend('Ch1','Ch2');
     
