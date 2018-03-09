@@ -38,7 +38,7 @@ Fid_Ch1 = []; Fid_Ch2 = [];
 for i = 1:size(rect2,1);
     
 xmin = min(allLocs(:,handles.xCol))+ rect2(i,1)*handles.pxlSizeFid;
-ymin = max(allLocs(:,handles.yCol))- rect2(i,2)*handles.pxlSizeFid - (rect2(i,4)*handles.pxlSizeFid) ;
+ymin = max(allLocs(:,handles.yCol))- rect2(i,2)*handles.pxlSizeFid - (rect2(i,4)*handles.pxlSizeFid);
 xmax = xmin + (rect2(i,3)* handles.pxlSizeFid);
 ymax = ymin + rect2(i,4) * handles.pxlSizeFid;
 
@@ -52,8 +52,6 @@ subset2(:,handles.RegionID)=i; % Region ID
 
 Fid_Ch1 = vertcat(Fid_Ch1,subset2(subset2(:,end-1)==1,1:end));
 Fid_Ch2 = vertcat(Fid_Ch2,subset2(subset2(:,end-1)==2,1:end));
-
-size(Fid_Ch1(:,end))
 
 end
 

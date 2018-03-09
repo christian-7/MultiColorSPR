@@ -1,8 +1,6 @@
-function RigidTrans(Fid_Ch1,Fid_Ch2,handles)
+function [locs_Ch2] = RigidTrans(Fid_Ch1,Fid_Ch2,locs_Ch2,handles)
 
 center_Ch1 = [];center_Ch2 = [];
-
-% handles.RegionID = 9;
 
 
 for i = handles.selectedFid;
@@ -79,6 +77,8 @@ for i = 1:size(center_Ch1,1);
     
 end
 
+% Correct the CoM
+
 center_Ch2_corr = [];
 center_Ch2_corr(:,1) = center_Ch2(:,1) + mean(deltaXY(:,1));
 center_Ch2_corr(:,2) = center_Ch2(:,2) + mean(deltaXY(:,2));
@@ -96,6 +96,11 @@ scatter(center_Ch1(:,1),center_Ch1(:,2),10,'g','filled');hold on;
 scatter(center_Ch2(:,1) + mean(deltaXY(:,1)),center_Ch2(:,2) + mean(deltaXY(:,2)),10,'r','filled');  
 box on; axis equal;
 title(['Fid After 2nd trans TRE = ', num2str(mean(TRE))]);
+
+% Correct the loc_Ch2 dataset
+
+locs_Ch2(:,handles.xCol) = locs_Ch2(:,handles.xCol) + mean(deltaXY(:,1));
+locs_Ch2(:,handles.yCol) = locs_Ch2(:,handles.yCol) + mean(deltaXY(:,2));
 
 fprintf('\n -- Linear Transformation applied to Ch2 localizations --\n')
 

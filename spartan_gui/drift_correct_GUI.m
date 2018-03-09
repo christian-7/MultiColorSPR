@@ -207,7 +207,7 @@ function loadAffine_Callback(hObject, eventdata, handles)
 
 % Create a file dialog for images
 
-    [FileName_Aff,Path_Aff] = uigetfile({'*.mat'},'Select Affine Transformation')
+    [FileName_Aff,Path_Aff] = uigetfile({'*.mat'},'Select Affine Transformation');
     
     % Read the selected file into the variable
    
@@ -503,10 +503,8 @@ function rigidTrans_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles
-
 handles = guidata(hObject);
 
-RigidTrans(handles.Fid_Ch1,handles.Fid_Ch2,handles)
+[handles.locs_Ch2] = RigidTrans(handles.Fid_Ch1,handles.Fid_Ch2,handles.locs_Ch2,handles);
 
 guidata(hObject, handles); % Update handles structure

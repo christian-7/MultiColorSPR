@@ -95,7 +95,7 @@ Avg_Ch2_new(1:min(Avg_Ch2(:,handles.frameCol))-1,:) = [];
 
 % Plotting
 
-figure('Position', [200 200 400 500])
+figure('Position', [100 200 400 500],'NumberTitle', 'off', 'Name', 'Result Channel 1')
 
 subplot(2,1,1)
 % axes(handles.axesCh1_1); cla reset;
@@ -104,14 +104,15 @@ scatter(Avg_Ch1(:,3),Avg_Ch1(:,2),1,'r'); hold on;
 box on;legend('Normalized X drift', 'Normalized Y Drift');
 xlabel('frames'); ylabel('nm');
 
-subplot(2,1,1)
+subplot(2,1,2)
 % axes(handles.axesCh1_2); cla reset;
 scatter(Avg_Ch1_new(:,1),Avg_Ch1_new(:,2),1,'g'); hold on;
 scatter(Avg_Ch1_new(:,1),Avg_Ch1_new(:,3),1,'r'); hold on;
 box on;legend('Averaged X drift', 'Averaged Y Drift');
 xlabel('frames'); ylabel('nm');
 
-figure('Position', [200 200 400 500])
+figure('Position', [500 200 400 500],'NumberTitle', 'off', 'Name', 'Results Channel 2')
+
 subplot(2,1,1)
 % axes(handles.axesCh2_1); cla reset;
 scatter(Avg_Ch2(:,3),Avg_Ch2(:,1),1,'g'); hold on;
@@ -119,7 +120,7 @@ scatter(Avg_Ch2(:,3),Avg_Ch2(:,2),1,'r'); hold on;
 box on;legend('Normalized X drift', 'Normalized Y Drift');
 xlabel('frames'); ylabel('nm');
 
-subplot(2,1,1)
+subplot(2,1,2)
 % axes(handles.axesCh2_2); cla reset;
 scatter(Avg_Ch2_new(:,1),Avg_Ch2_new(:,2),1,'g'); hold on;
 scatter(Avg_Ch2_new(:,1),Avg_Ch2_new(:,3),1,'r'); hold on;
