@@ -22,7 +22,7 @@ function varargout = drift_correct_GUI(varargin)
 
 % Edit the above text to modify the response to help drift_correct_GUI
 
-% Last Modified by GUIDE v2.5 08-Mar-2018 22:43:13
+% Last Modified by GUIDE v2.5 09-Mar-2018 14:11:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -131,14 +131,14 @@ function openLocCh1_Callback(hObject, eventdata, handles)
     cd(Path_Ch1);
     
     handles.locs_Ch1          = dlmread([Name_Ch1 ext_Ch1],',',1,0); 
-    handles.locs_Ch1(:,end+1) = 1; % Channel ID
+    handles.locs_Ch1(:,end+1) = 1; % Channel ID, column 9
 
     
     % Read the header
     
     file = fopen([Name_Ch1 ext_Ch1]);
-    line = fgetl(file);
-    h    = regexp( line, ',', 'split' );
+    handles.line = fgetl(file);
+    h    = regexp(handles.line, ',', 'split' );
 
     handles.xCol      = strmatch('x [nm]',h);
     handles.yCol      = strmatch('y [nm]',h);
@@ -238,14 +238,18 @@ moving = []; moving = handles.locs_Ch2(:,handles.xCol:handles.yCol);
 
 corrected_moving = transformPointsInverse(handles.Affine.T_lwm,moving);
 
-handles.locs_Ch2(:,handles.xCol) = corrected_moving(:,1);
-handles.locs_Ch2(:,handles.yCol) = corrected_moving(:,2);
+handles.locs_Ch2_affApplied = handles.locs_Ch2;
+
+handles.locs_Ch2_affApplied(:,handles.xCol) = corrected_moving(:,1);
+handles.locs_Ch2_affApplied(:,handles.yCol) = corrected_moving(:,2);
+
+disp(' -- Affine applied --');
 
 % Filter out of bound points
 
-locs_Ch2_filtered           = [];
-locs_Ch2_filtered           = handles.locs_Ch2(handles.locs_Ch2(:,handles.xCol)<1e5,1:end);
-handles.locs_Ch2            = locs_Ch2_filtered;
+locs_Ch2_filtered             = [];
+locs_Ch2_filtered             = handles.locs_Ch2(handles.locs_Ch2(:,handles.xCol)<1e5,1:end);
+handles.locs_Ch2_affApplied   = locs_Ch2_filtered;
 
 set(handles.applyAffine,'BackgroundColor','green');
 
@@ -304,7 +308,11 @@ function averageFid_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
+set(handles.averageFid, 'Enable', 'off')
+
 [handles.Avg_Ch1_new, handles.Avg_Ch2_new] = averageFiducials(handles.selectedFid, handles);
+
+set(handles.averageFid, 'Enable', 'on')
 
 fprintf('\n -- Fiducial Tracks Averaged --\n')
 
@@ -342,12 +350,21 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton11.
-function pushbutton11_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton11 (see GCBO)
+% --- Executes on button press in saveLocs.
+function saveLocs_Callback(hObject, eventdata, handles)
+% hObject    handle to saveLocs (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
+
+set(handles.saveLocs, 'Enable', 'off');
+
+saveDC(handles.locs_Ch1_DC, handles.locs_Ch2_corr, handles);
+
+set(handles.saveLocs, 'Enable', 'on');
+
+guidata(hObject, handles); % Update handles structure
 
 % --- Executes on selection change in whatToSave.
 function whatToSave_Callback(hObject, eventdata, handles)
@@ -380,12 +397,7 @@ function splineFiduc_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
-[locs_Ch1, Fid_Ch1,locs_Ch2, Fid_Ch2] = splineFit_Fiducials(handles.Avg_Ch1_new,handles.Avg_Ch2_new,handles.NbrBins,handles.FilterRad,handles.smoothF, handles.startFrame,handles);
-
-handles.locs_Ch1    = locs_Ch1;
-handles.Fid_Ch1     = Fid_Ch1;
-handles.locs_Ch2    = locs_Ch2;
-handles.Fid_Ch2     = Fid_Ch2;
+[handles.locs_Ch1_DC, handles.Fid_Ch1_DC,handles.locs_Ch2_DC, handles.Fid_Ch2_DC] = splineFit_Fiducials(handles.Avg_Ch1_new,handles.Avg_Ch2_new,handles.NbrBins,handles.FilterRad,handles.smoothF, handles.startFrame,handles);
 
 fprintf('\n -- Data Drift Corrected --\n')
 
@@ -505,6 +517,6 @@ function rigidTrans_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
-[handles.locs_Ch2] = RigidTrans(handles.Fid_Ch1,handles.Fid_Ch2,handles.locs_Ch2,handles);
+[handles.locs_Ch2_corr] = RigidTrans(handles.Fid_Ch1_DC,handles.Fid_Ch2_DC,handles.locs_Ch2_DC,handles);
 
 guidata(hObject, handles); % Update handles structure
