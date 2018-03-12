@@ -8,9 +8,14 @@ classdef ScipionWorkflow < em.PackageInterface
     %SCIPIONWORKFLOW Launches a pre-specified Scipion workflow.
     
     properties (SetAccess = private, GetAccess = public)
+        projectName;
         workflow = '';
         refLabel;
         poiLabel = 'poi';
+    end
+    
+    properties (SetAccess = private, GetAccess = private)
+        scipionPID;
     end
     
     properties (Constant, GetAccess = private)
@@ -24,12 +29,15 @@ classdef ScipionWorkflow < em.PackageInterface
     
     methods
         function obj = ScipionWorkflow( ...
-                pairedAnalysis, pathToRefMontage, refLabel, varargin ...
+            projectName, pairedAnalysis, pathToRefMontage, refLabel, ...
+            varargin ...
         )
             % SCIPIONWORKFLOW Create the Scipion package wrapper.
             %
             % Inputs
             % ------
+            % projectName : str
+            %     A descriptive name to give to the project.
             % pairedAnalysis : boolean
             %     If true, the paired analysis workflow for two protein
             %     reconstructions will be launched. If false, a single
@@ -46,6 +54,7 @@ classdef ScipionWorkflow < em.PackageInterface
             % varargin{2} : str (Default: 'poi')
             %     The text label for the protein of interest
             
+            obj.projectName = projectName;
             obj.pairedAnalysis = pairedAnalysis;
             obj.pathToRefMontage = pathToRefMontage;
             obj.refLabel = refLabel;
@@ -68,19 +77,48 @@ classdef ScipionWorkflow < em.PackageInterface
         function launchWorkflow(obj)
             % LAUNCHWORKFLOW Launches the Scipion session.
             assert(~isempty(obj.workflow), ...
-                'Assertion failed: workflow was not generated.');
+                ['Assertion failed: workflow file was not generated ' ...
+                 'from template.']);
             
             % Creates the Scipion workflow .json file.
-            filename = strcat(tempname, '.json');
-            fid = fopen(filename, 'w');
+            jsonFilename = strcat(tempname, '.json');
+            fid = fopen(jsonFilename, 'w');
             fprintf(fid, '%s', obj.workflow);
             fclose(fid);
             
-            % Create the Scipion project derived from the workflow.
-            disp('Todo.');
+            % Creates the Scipion project.
+            sp = obj.spartanEnv.scipionPath;
+            scipionScript = fullfile(sp, 'scipion');
+            projectScript = fullfile(sp, 'scripts', 'create_project.py');
+            cmd = strcat(scipionScript, {' run python '}, projectScript,...
+                         {' '}, obj.projectName, {' '}, jsonFilename);
+            cmd = cmd{1};
+            disp('Creating new Scipion project...')
+            [status, cmdout] = system(cmd);
+            disp(cmdout);
             
-            % Launch the Scipion subprocess.
-            disp('Todo.');
+            if (status ~= 0)
+                error(['Scipion project creation failed with exit ' ...
+                       'code %d'], status);
+                   
+            end
+            
+            % Spawns the Scipion subprocess. We can assume a Linux system
+            % because Scipion does not work on Windows.
+            disp('Launching Scipion...');
+            cmd = strcat(scipionScript, {' project '}, obj.projectName, ...
+                         ' & echo $!');
+            cmd = cmd{1};
+            [status, cmdout] = system(cmd);
+            
+            if (status == 0)
+                obj.scipionPID = str2double(cmdout);
+                disp(['Scipion process launched with PID: ' cmdout]);
+            else
+                error(['Scipion process spawning failed with exit ' ...
+                       'code %d'], status);
+            end
+            
         end
     end
     
