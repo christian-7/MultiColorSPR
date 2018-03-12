@@ -8,14 +8,23 @@ classdef ScipionWorkflow < em.PackageInterface
     %SCIPIONWORKFLOW Launches a pre-specified Scipion workflow.
     
     properties (SetAccess = private, GetAccess = public)
+        % The name of the project inside Scipion.
         projectName;
+        
+        % JSON string defining the Scipion workflow. This is assigned only
+        % when the workflow has been successfully generated from the
+        % template.
         workflow = '';
+        
+        % The label to assign to the reference protein inside Scipion.
         refLabel;
+        
+        % The label to assign to the protein of interest inside Scipion.
         poiLabel = 'poi';
-    end
-    
-    properties (SetAccess = private, GetAccess = private)
-        scipionPID;
+        
+        % Scipion's process ID number. This is only assigned once the
+        % Scipion process is spawned.
+        PID;
     end
     
     properties (Constant, GetAccess = private)
@@ -42,7 +51,7 @@ classdef ScipionWorkflow < em.PackageInterface
             %     If true, the paired analysis workflow for two protein
             %     reconstructions will be launched. If false, a single
             %     protein reconstruction workflow will be launched.
-            % pathToMontage1 : str
+            % pathToRefMontage : str
             %     The full path (including filename) to the montage for
             %     the reference protein.
             % refLabel : str
@@ -59,7 +68,9 @@ classdef ScipionWorkflow < em.PackageInterface
             obj.pathToRefMontage = pathToRefMontage;
             obj.refLabel = refLabel;
             
-            if (pairedAnalysis) && (nargin < 4)
+            % TODO: ADD CODE FOR SINGLE POI ANALYSIS
+            
+            if (pairedAnalysis) && (nargin < 5)
                 error('ScipionWorkflow:NotEnoughInputs', ...
                     ['Error! \nTwo montages must be supplied if '...
                      'pairedAnalysis is set to true.']);
@@ -112,13 +123,12 @@ classdef ScipionWorkflow < em.PackageInterface
             [status, cmdout] = system(cmd);
             
             if (status == 0)
-                obj.scipionPID = str2double(cmdout);
+                obj.PID = str2double(cmdout);
                 disp(['Scipion process launched with PID: ' cmdout]);
             else
                 error(['Scipion process spawning failed with exit ' ...
                        'code %d'], status);
             end
-            
         end
     end
     
