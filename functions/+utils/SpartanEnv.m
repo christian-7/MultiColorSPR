@@ -25,8 +25,10 @@ classdef (Sealed) SpartanEnv < handle
         end
     end
     
-    properties
+    properties (SetAccess = public, GetAccess = public)
+        spartanPath = '';
         scipionPath = '';
+        scipionPairedTemplate = '';
     end
 end
 

@@ -8,28 +8,32 @@ classdef PackageInterface < handle
     % The interface for wrapping calls to EM SPA workflows.
     
     properties (SetAccess = protected, GetAccess = public)
-        pairedAnalysis;
         % Determines whether a single protein workflow or a paired protein
         % workflow will be launched.
+        pairedAnalysis;
         
-        pathToMontage1;
-        % The full path to the montage of single particle images for the
-        % first protein.
+        % The full path (including filename) to the montage of single
+        % particle images for the reference protein.
+        pathToRefMontage;
         
-        pathToMontage2 = '';
-        % The full path to the montage of single particle images for the
-        % second protein; this is required if pairedAnalysis is set to
-        % true and ignored if it is set to False.
+        % The full path (including filename) to the montage of single
+        % particle images for the second protein of interest; this is
+        % required if pairedAnalysis is set to true and ignored if it is
+        % set to False.
+        pathToPairMontage = '';
+        
     end
     
     properties (SetAccess = protected, GetAccess = protected)
-        spartanEnv = utils.SpartanEnv.getEnvironment();
         % A copy of the Spartan environment variables.
+        spartanEnv = utils.SpartanEnv.getEnvironment();
+    
     end
     
     methods (Abstract)
-        launchWorkflow(obj);
         % Launches the EM analysis software.
+        launchWorkflow(obj);
+        
     end
     
     methods
@@ -41,12 +45,13 @@ classdef PackageInterface < handle
             pa = obj.pairedAnalysis;
         end
         
-        function m1 = get.pathToMontage1(obj)
-            m1 = obj.pathToMontage1;
+        function m1 = get.pathToRefMontage(obj)
+            m1 = obj.pathToRefMontage;
         end
         
-        function m2 = get.pathToMontage2(obj)
-            m2 = obj.pathToMontage2;
+        function m2 = get.pathToPairMontage(obj)
+            m2 = obj.pathToPairMontage;
         end
+        
     end
 end
