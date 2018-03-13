@@ -17,10 +17,10 @@ classdef PackageInterface < handle
         pathToRefMontage;
         
         % The full path (including filename) to the montage of single
-        % particle images for the second protein of interest; this is
+        % particle images for the second protein of interest (POI); this is
         % required if pairedAnalysis is set to true and ignored if it is
         % set to False.
-        pathToPairMontage = '';
+        pathToPoiMontage = '';
         
     end
     
@@ -49,8 +49,8 @@ classdef PackageInterface < handle
             m1 = obj.pathToRefMontage;
         end
         
-        function m2 = get.pathToPairMontage(obj)
-            m2 = obj.pathToPairMontage;
+        function m2 = get.pathToPoiMontage(obj)
+            m2 = obj.pathToPoiMontage;
         end
         
     end

@@ -20,11 +20,14 @@ classdef ScipionWorkflow < em.PackageInterface
         refLabel;
         
         % The label to assign to the protein of interest inside Scipion.
-        poiLabel = 'poi';
+        poiLabel;
         
         % Scipion's process ID number. This is only assigned once the
         % Scipion process is spawned.
         PID;
+        
+        % The full path to the folder for this Scipion project.
+        pathToProject;
     end
     
     properties (Constant, GetAccess = private)
@@ -38,8 +41,7 @@ classdef ScipionWorkflow < em.PackageInterface
     
     methods
         function obj = ScipionWorkflow( ...
-            projectName, pairedAnalysis, pathToRefMontage, refLabel, ...
-            varargin ...
+            projectName, pairedAnalysis, pathToRefMontage, varargin ...
         )
             % SCIPIONWORKFLOW Create the Scipion package wrapper.
             %
@@ -56,31 +58,54 @@ classdef ScipionWorkflow < em.PackageInterface
             %     the reference protein.
             % refLabel : str
             %     The text label for the reference protein.
-            % vargin{1} : str
+            % pathToPoiMontage : str (optional)
             %     The full path (including filename) to the montage for
             %     the second protein of interest. This must be supplied
             %     if pairedAnalysis is set to true.
-            % varargin{2} : str (Default: 'poi')
-            %     The text label for the protein of interest
+            % poiLabel : str (optional)
+            %     The text label for the protein of interest.
+            %
+            % Parameters
+            % ----------
+            % pathToProject : str (optional)
+            %     The location of the Scipion project. If this is empty,
+            %     Scipion will use the default location, which is typically
+            %     the ScipionUserData/projects folder. Specify this
+            %     parameter as a name/value pair.
             
-            obj.projectName = projectName;
-            obj.pairedAnalysis = pairedAnalysis;
-            obj.pathToRefMontage = pathToRefMontage;
-            obj.refLabel = refLabel;
+            p = inputParser;
+            
+            defaultRefLabel = 'Reference_Protein';
+            defaultPoiLabel = 'Paired_Protein';
+            
+            addRequired(p, 'projectName', @ischar);
+            addRequired(p, 'pairedAnalysis', @islogical);
+            addRequired(p, 'pathToRefMontage', @ischar);
+            addOptional(p, 'refLabel', defaultRefLabel, @ischar);
+            addOptional(p, 'pathToPoiMontage', '', @ischar);
+            addOptional(p, 'poiLabel', defaultPoiLabel, @ischar);
+            addParameter(p, 'pathToProject', '', @ischar);
+            
+            parse(p, projectName, pairedAnalysis, pathToRefMontage, ...
+                  varargin{:});
+            
+            obj.projectName = p.Results.projectName;
+            obj.pairedAnalysis = p.Results.pairedAnalysis;
+            obj.pathToRefMontage = p.Results.pathToRefMontage;
+            obj.refLabel = p.Results.refLabel;
+            obj.poiLabel = p.Results.poiLabel;
             
             % TODO: ADD CODE FOR SINGLE POI ANALYSIS
             
-            if (pairedAnalysis) && (nargin < 5)
+            if (obj.pairedAnalysis) && ( isempty(p.Results.pathToPoiMontage) )
                 error('ScipionWorkflow:NotEnoughInputs', ...
                     ['Error! \nTwo montages must be supplied if '...
                      'pairedAnalysis is set to true.']);
             else
-                obj.pathToPairMontage = varargin{1};
+                obj.pathToPoiMontage = p.Results.pathToPoiMontage;
             end
             
-            if (length(varargin) == 2)
-                obj.poiLabel = varargin{2};
-            end
+            obj.pathToProject = p.Results.pathToProject;
             
             generateWorkflow(obj);
         end
@@ -102,7 +127,8 @@ classdef ScipionWorkflow < em.PackageInterface
             scipionScript = fullfile(sp, 'scipion');
             projectScript = fullfile(sp, 'scripts', 'create_project.py');
             cmd = strcat(scipionScript, {' run python '}, projectScript,...
-                         {' '}, obj.projectName, {' '}, jsonFilename);
+                         {' '}, obj.projectName, {' '}, jsonFilename, ...
+                         {' '}, obj.pathToProject);
             cmd = cmd{1};
             disp('Creating new Scipion project...')
             [status, cmdout] = system(cmd);
@@ -143,8 +169,8 @@ classdef ScipionWorkflow < em.PackageInterface
             refPath = filepath;
             refPattern = strcat(name, ext);
             
-            if ~isempty(obj.pathToPairMontage)
-                [filepath, name, ext] = fileparts(obj.pathToPairMontage);
+            if ~isempty(obj.pathToPoiMontage)
+                [filepath, name, ext] = fileparts(obj.pathToPoiMontage);
                 pairPath = filepath;
                 pairPattern = strcat(name, ext);
             end

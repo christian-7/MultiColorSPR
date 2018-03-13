@@ -27,7 +27,7 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
     
     methods (TestMethodSetup)
         function setUp(testCase)     
-            % SETUP Sets up the test environment
+            %SETUP Sets up the test environment
             testCase.checkScipion();
             
             import matlab.unittest.fixtures.TemporaryFolderFixture;
@@ -37,6 +37,42 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
                 testCase.applyFixture(TemporaryFolderFixture).Folder;
             testCase.tempFolderPair = ...
                 testCase.applyFixture(TemporaryFolderFixture).Folder;                   
+        end
+    end
+    
+    methods (TestMethodTeardown)
+        function tearDown(testCase)
+            %TEARDOWN Cleans up the test environment.
+            
+            % Find the Scipion user data path
+            import utils.SpartanEnv;
+            env = utils.SpartanEnv.getEnvironment();
+            
+            if isempty(env.scipionPath)
+                error('ScipionWorkflowTest:emptyScipionPath',...
+                      ['Error. \nThe path to the Scipion folder is ' ...
+                       'empty. Please add it to the Spartan '...
+                       'environment variables.']);
+            end
+            
+            scipionScript = fullfile(env.scipionPath,'scipion');
+            cmd = strcat(scipionScript, ' printenv');
+            [status, cmdout] = system(cmd);
+            assert(status == 0, ['Error: Failure to use Scipion to '...
+                                 'retreive environment variables.']);
+            pattern = 'SCIPION_USER_DATA="(.*?)"';
+            [start, stop] = regexp(cmdout, pattern);
+            line = cmdout(start:stop);
+            q = strfind(line, '"'); % Extract data between quotes
+            userDataDir = line(q(1) + 1:q(2) - 1);
+            
+            % Remove the test project folder
+            projectDir = fullfile(userDataDir, 'projects', testCase.PROJECTNAME);
+            cmd = strcat({'rm -rf '}, projectDir);
+            cmd = cmd{1};
+            [status, ~] = system(cmd);
+            
+            assert(status == 0, 'Error: Failure to cleanup test project.');
         end
     end
     
