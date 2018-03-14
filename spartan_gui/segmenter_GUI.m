@@ -22,7 +22,7 @@ function varargout = segmenter_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenter_GUI
 
-% Last Modified by GUIDE v2.5 14-Mar-2018 09:00:58
+% Last Modified by GUIDE v2.5 14-Mar-2018 21:54:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,9 +55,11 @@ function segmenter_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for segmenter_GUI
 handles.output = hObject;
 
-handles.FOV         = 1;
-handles.pxlSize     = 106; % nm 
-handles.Particles   = [];  % Initialize empty particles variable 
+handles.FOV          = 1;
+handles.pxlSize      = 106; % nm 
+handles.Particles    = [];  % Initialize empty particles variable 
+handles.minLengthCh1 = 20;
+handles.minLengthCh2 = 20; 
 
 global global_struct;
 
@@ -92,9 +94,9 @@ handles.output = hObject;
 
 contents = cellstr(get(hObject,'String'));
 
-h = contents{get(hObject,'Value')}; 
+handles.input = contents{get(hObject,'Value')}; 
 
-if isempty(strmatch('Single color',h));
+if  isempty(strmatch('Single color',handles.input));
     display('-- two-color selected --');   
     set(handles.locsCh2, 'Enable', 'on')
     set(handles.WF2, 'Enable', 'on')
@@ -213,22 +215,34 @@ function WF2_Callback(hObject, eventdata, handles)
     guidata(hObject, handles); % Update handles structure
 
 
-% --- Executes on button press in saveOverlay.
-function saveOverlay_Callback(hObject, eventdata, handles)
-% hObject    handle to saveOverlay (see GCBO)
+% --- Executes on button press in saveLocWFOverlay.
+function saveLocWFOverlay_Callback(hObject, eventdata, handles)
+% hObject    handle to saveLocWFOverlay (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of saveOverlay
+% Hint: get(hObject,'Value') returns toggle state of saveLocWFOverlay
+
+handles         = guidata(hObject);
+
+handles.saveLocWFOverlay = get(hObject,'Value');
+
+guidata(hObject, handles); % Update handles structure
 
 
-% --- Executes on button press in saveCorr.
-function saveCorr_Callback(hObject, eventdata, handles)
-% hObject    handle to saveCorr (see GCBO)
+% --- Executes on button press in saveCorrPlots.
+function saveCorrPlots_Callback(hObject, eventdata, handles)
+% hObject    handle to saveCorrPlots (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of saveCorr
+% Hint: get(hObject,'Value') returns toggle state of saveCorrPlots
+
+handles         = guidata(hObject);
+
+handles.saveCorrPlots = get(hObject,'Value');
+
+guidata(hObject, handles); % Update handles structure
 
 
 
@@ -239,6 +253,12 @@ function savePath_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of savePath as text
 %        str2double(get(hObject,'String')) returns contents of savePath as a double
+
+toSave = handles.T_lwm;
+
+dname = uigetdir;
+
+uisave('toSave','T_lwm_data.mat');
 
 
 % --- Executes during object creation, after setting all properties.
@@ -332,17 +352,17 @@ function locsCh2_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-    [FileName_Ch2,Path_Ch2] = uigetfile({'*.csv';'*.dat'},'Select Loc file Ch1');
+    [FileName_Ch2,Path_Ch2] = uigetfile({'*.csv';'*.dat'},'Select Loc file Ch2');
     
     % Read the selected file into the variable
     
-    disp('Reading Localization file for Channel 1 ...');
+    disp('Reading Localization file for Channel 2 ...');
     
     [path,Name_Ch2,ext_Ch2] = fileparts(FileName_Ch2);
     
-    handles.Ext_Ch1     = ext_Ch2;
-    handles.Path_Ch1    = Path_Ch2;
-    handles.Name_Ch1    = Name_Ch2;
+    handles.Ext_Ch2     = ext_Ch2;
+    handles.Path_Ch2    = Path_Ch2;
+    handles.Name_Ch2    = Name_Ch2;
     
     cd(Path_Ch2);
     
@@ -350,7 +370,7 @@ function locsCh2_Callback(hObject, eventdata, handles)
     
     if isempty(handles.locs_Ch2)==0;
     
-    set(handles.openLocCh1,'BackgroundColor','green');
+    set(handles.locsCh2,'BackgroundColor','green');
     
     else end
     
@@ -404,10 +424,14 @@ function startSegmentation_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles         = guidata(hObject);
+
 set(handles.startSegmentation,'BackgroundColor','white');
 
-% Select Segmentation Channel
+% Select Segmentation Channel an input format
 
+if  isempty(strmatch('Single color',handles.input)); % then its two color
+    
 if          handles.checkCh1==1;
     
    handles.PrimaryWF   = handles.WFCh1; 
@@ -426,13 +450,19 @@ else
 
 end
 
+else
+    
+   handles.PrimaryWF   = handles.WFCh1; 
+    
+end
+
 guidata(hObject, handles);
 
 % Select Segmentation Mode
 
 if handles.modeOTSU == 1;
     
-    [B,L,N,A] = segmentFromWF(handles.PrimaryWF, handles.SecondaryWF);
+    [handles.binary] = segmentFromWF(handles.PrimaryWF);
     
     set(handles.startSegmentation,'BackgroundColor','green');
 
@@ -450,9 +480,18 @@ elseif handles.modeManual == 1;
 
 else
     
-    [B,L,N,A] = segmentFromWF(handles.PrimaryWF, handles.SecondaryWF);
+    [handles.binary] = segmentFromWF(handles.PrimaryWF);
     
 end
+
+% Find boundaries
+
+[handles.boundaries,L,N,A]   = bwboundaries(handles.binary);
+
+disp(' - Particles segmented - ');
+
+guidata(hObject, handles); % Update handles structure
+
 
 
 
@@ -494,3 +533,144 @@ handles             = guidata(hObject);
 handles.modeManual  = get(hObject,'Value');
 
 guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on button press in extractParticles.
+function extractParticles_Callback(hObject, eventdata, handles)
+% hObject    handle to extractParticles (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles             = guidata(hObject);
+
+handles
+handles.minLengthCh1
+
+if  isempty(strmatch('Single color',handles.input)); % then its two color
+
+[handles.Cent] = extractParticles_2C(handles.WFCh1,handles.WFCh2,handles.locs_Ch1,handles.locs_Ch2,handles.minLengthCh1,handles.minLengthCh2,handles.boundaries,handles.pxlSize); 
+
+else
+    
+[handles.Cent] = extractParticles_1C(handles.WFCh1,handles.locs_Ch1,handles.minLengthCh1,handles.boundaries,handles.pxlSize); 
+
+end
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on button press in pushbutton12.
+function pushbutton12_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton11.
+function pushbutton11_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton11 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function minLengthCh1_Callback(hObject, eventdata, handles)
+% hObject    handle to minLengthCh1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of minLengthCh1 as text
+%        str2double(get(hObject,'String')) returns contents of minLengthCh1 as a double
+
+handles                 = guidata(hObject);
+
+handles.minLengthCh1    = str2double(get(hObject,'String'));
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function minLengthCh1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to minLengthCh1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function minLengthCh2_Callback(hObject, eventdata, handles)
+% hObject    handle to minLengthCh2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of minLengthCh2 as text
+%        str2double(get(hObject,'String')) returns contents of minLengthCh2 as a double
+
+handles                 = guidata(hObject);
+
+handles.minLengthCh2    = str2double(get(hObject,'String'));
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function minLengthCh2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to minLengthCh2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in saveWFOverlay.
+function saveWFOverlay_Callback(hObject, eventdata, handles)
+% hObject    handle to saveWFOverlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of saveWFOverlay
+
+handles         = guidata(hObject);
+
+handles.saveWFOverlay = get(hObject,'Value');
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes on button press in selectSavePath.
+function selectSavePath_Callback(hObject, eventdata, handles)
+% hObject    handle to selectSavePath (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles         = guidata(hObject);
+
+handles.SaveDirectory = uigetdir;
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes on button press in saveData.
+function saveData_Callback(hObject, eventdata, handles)
+% hObject    handle to saveData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles         = guidata(hObject);
+
+particles = handles.Cent;
+
+filename = 'FOV_X_extractedParticles.mat';
+
+uisave('particles',filename);
