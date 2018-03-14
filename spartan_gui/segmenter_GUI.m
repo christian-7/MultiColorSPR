@@ -22,7 +22,7 @@ function varargout = segmenter_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenter_GUI
 
-% Last Modified by GUIDE v2.5 13-Mar-2018 22:17:05
+% Last Modified by GUIDE v2.5 14-Mar-2018 09:00:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,8 +58,8 @@ handles.output = hObject;
 handles.FOV         = 1;
 handles.pxlSize     = 106; % nm 
 handles.Particles   = [];  % Initialize empty particles variable 
-% handles.checkCh1    = 1;
-% handles.modeOTSU    = 1;
+
+global global_struct;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -432,7 +432,7 @@ guidata(hObject, handles);
 
 if handles.modeOTSU == 1;
     
-    [B,L,N,A] = segmentFromWF(PrimaryWF, SecondaryWF);
+    [B,L,N,A] = segmentFromWF(handles.PrimaryWF, handles.SecondaryWF);
     
     set(handles.startSegmentation,'BackgroundColor','green');
 
@@ -444,12 +444,13 @@ elseif handles.modeManual == 1;
       
     set(handles.startSegmentation,'BackgroundColor','green');
     
-    handles
-       
+    global global_struct;
+    
+    handles.binary = global_struct.binary;
 
 else
     
-    [B,L,N,A] = segmentFromWF(PrimaryWF, SecondaryWF);
+    [B,L,N,A] = segmentFromWF(handles.PrimaryWF, handles.SecondaryWF);
     
 end
 
@@ -493,22 +494,3 @@ handles             = guidata(hObject);
 handles.modeManual  = get(hObject,'Value');
 
 guidata(hObject, handles); % Update handles structure
-
-
-% --- Executes on button press in getBin.
-function getBin_Callback(hObject, eventdata, handles)
-% hObject    handle to getBin (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-h = findobj('Tag','manSeg');
-
- if ~isempty(h);
-    g1data = guidata(h);
- end
- 
-handles.Bin = g1data.binary; 
-close(findobj('Name','manualSegment'));
- 
- handles
- 

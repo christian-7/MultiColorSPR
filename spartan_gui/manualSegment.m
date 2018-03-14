@@ -22,7 +22,7 @@ function varargout = manualSegment(varargin)
 
 % Edit the above text to modify the response to help manualSegment
 
-% Last Modified by GUIDE v2.5 13-Mar-2018 21:32:13
+% Last Modified by GUIDE v2.5 14-Mar-2018 09:03:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -197,12 +197,12 @@ h = findobj('Tag','segmenterHead');
 I2  = imadjust(g1data.PrimaryWF,[handles.ThreshMin handles.ThreshMax],[]);
 I3  = imgaussfilt(I2, 5);
 I4  = imadjust(I3,[0.2 0.5],[]);
-bin = im2bw(I4,0.3);
+binIM = im2bw(I4,0.3);
 
 axes(handles.figDisplay);
-imshow(bin);
+imshow(binIM);
 
-handles.binary = bin;
+handles.binary = binIM;
 guidata(hObject, handles); % Update handles structure
 
 
@@ -213,18 +213,11 @@ function saveParam_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-    h = findobj('Tag','segmenterHead');
+        
+global global_struct;
 
-    if ~isempty(h);
-    g1data = guidata(h);
-    end
- 
-    HandleMainGUI = getappdata(0,'segmenterHead');
-    %write a local variable called MyData to SharedData, any type of data
-    setappdata(h,'FOV',[1:53]); 
-   
+global_struct.binary = handles.binary;
     
 
 segmenter_GUI
 close(findobj('Name','manualSegment'));
-
