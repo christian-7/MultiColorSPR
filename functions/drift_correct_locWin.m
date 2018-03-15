@@ -2,19 +2,22 @@
 
 clear,clc, close all
 
-nameC2 = 'Z:\Christian-Sieben\data_HTP\2018-03-08_humanCent_3C_Sas6_Cep152_Centrin\locResults\Cep152_DL755_1_1/humanCent_Cep57_Sas6_DL755_4_1_MMStack_1_Localizations.csv';
-nameC1 = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data/humanCent_STILL_A647_4_1_MMStack_1_Localizations.csv';
+FOV = 14;
+
+nameC1 = ['Z:\Christian-Sieben\data_HTP\2018-03-08_humanCent_3C_Sas6_Cep152_Centrin\locResults\Sas6_A647_' num2str(FOV) '_1\Sas6_A647_' num2str(FOV) '_1_MMStack_1_Localizations.csv'];
+nameC2 = ['Z:\Christian-Sieben\data_HTP\2018-03-08_humanCent_3C_Sas6_Cep152_Centrin\locResults\Cep152_DL755_' num2str(FOV) '_1\Cep152_DL755_' num2str(FOV) '_1_MMStack_1_Localizations_affineApplied.csv'];
 
 [filepath_Ch1,name_Ch1,ext_Ch1] = fileparts(nameC1);
 [filepath_Ch2,name_Ch2,ext_Ch2] = fileparts(nameC2);
 
 % Load file first channel
+cd(filepath_Ch1);locs_Ch1 = dlmread([name_Ch1 ext_Ch1],',',1,0);
+cd(filepath_Ch2);locs_Ch2 = dlmread([name_Ch2 ext_Ch2],',',1,0);
 
-locs_Ch1 = dlmread([name_Ch1 ext_Ch1],',',1,0);
-locs_Ch2 = dlmread([name_Ch2 ext_Ch2],',',1,0);
+locs_Ch1(:,end+1) = 1; % Channel ID, col 9
+locs_Ch2(:,end+1) = 2; % Channel ID, col 9
 
-locs_Ch1(:,end+1) = 1; % Channel ID
-locs_Ch2(:,end+1) = 2; % Channel ID
+RegionID = size(locs_Ch1,2)+1; % only for Fid variable, col 10
 
 % Load the header and find the right Columns
 
@@ -25,31 +28,33 @@ h = regexp( line, ',', 'split' );
 xCol      = strmatch('x [nm]',h);
 yCol      = strmatch('y [nm]',h);
 frameCol  = strmatch('frame',h);
-deltaXCol = size(locs_Ch1,2)+1;
-deltaYCol = size(locs_Ch1,2)+2;
+deltaXCol = size(locs_Ch1,2)+1; % col 10
+deltaYCol = size(locs_Ch1,2)+2; % col 11
+
+display('-- Data loaded --')
 
 %% Apply Affine to Ch2 dataset
 
-T1 = load('Global_LWMtrans_2017-09-07_images.mat');
-
-moving = []; moving = locs_Ch2(:,xCol:yCol);
-
-corrected_moving = transformPointsInverse(T1.T_lwm,moving);
-
-locs_Ch2(:,xCol) = corrected_moving(:,1);
-locs_Ch2(:,yCol) = corrected_moving(:,2);
-
-% Filter out of bound points
-
-locs_Ch2_filtered = [];
-locs_Ch2_filtered = locs_Ch2(locs_Ch2(:,xCol)<1e5,1:end);
-locs_Ch2          = locs_Ch2_filtered;
+% T1 = load('Global_LWMtrans_2017-09-07_images.mat');
+% 
+% moving = []; moving = locs_Ch2(:,xCol:yCol);
+% 
+% corrected_moving = transformPointsInverse(T1.T_lwm,moving);
+% 
+% locs_Ch2(:,xCol) = corrected_moving(:,1);
+% locs_Ch2(:,yCol) = corrected_moving(:,2);
+% 
+% % Filter out of bound points
+% 
+% locs_Ch2_filtered = [];
+% locs_Ch2_filtered = locs_Ch2(locs_Ch2(:,xCol)<1e5,1:end);
+% locs_Ch2          = locs_Ch2_filtered;
 
 %% Combine Channels and select fiducials from Image
 
 allLocs = vertcat(locs_Ch1,locs_Ch2);
 
-pxlsize = 600;
+pxlsize = 400;
 
 heigth  = round((max(allLocs(:,yCol))-min(allLocs(:,yCol)))/pxlsize);
 width   = round((max(allLocs(:,xCol))-min(allLocs(:,xCol)))/pxlsize);
@@ -59,7 +64,7 @@ im      = hist3([allLocs(:,xCol),allLocs(:,yCol)],[width heigth]); % heigth x wi
 
 rect = []; rect2 = [];
 
-figure('Position',[100 200 400 400])
+figure('Position',[100 200 600 600])
 f = imagesc(imrotate(im,90),[(max(locs_Ch1(:,frameCol))+max(locs_Ch2(:,frameCol)))*0.6 max(locs_Ch1(:,frameCol))+max(locs_Ch2(:,frameCol))]);
 colormap('parula'); colorbar;
 
@@ -120,19 +125,19 @@ end
 
 close all;
 
-selectedFid = [1,2,4];
+selectedFid = [1];
 
 Avg_Ch1x = []; Avg_Ch1y = []; Avg_Ch1 = []; Avg_Ch1frame = [];Avg_Ch1ID = [];
 
 for i = selectedFid;
     
-    target  = find(Fid_Ch1(:,9)==i & Fid_Ch1(:,frameCol)<1000);
+    target  = find(Fid_Ch1(:,RegionID)==i & Fid_Ch1(:,frameCol)<1000);
     offsetX = median(Fid_Ch1(target,xCol)); offsetY = median(Fid_Ch1(target,yCol)); % median of the first 1000 frames 
     
-    Avg_Ch1x        = vertcat(Avg_Ch1x,Fid_Ch1(Fid_Ch1(:,9)==i,xCol)-offsetX);
-    Avg_Ch1y        = vertcat(Avg_Ch1y,Fid_Ch1(Fid_Ch1(:,9)==i,yCol)-offsetY);
-    Avg_Ch1frame    = vertcat(Avg_Ch1frame,Fid_Ch1(Fid_Ch1(:,9)==i,frameCol));
-    Avg_Ch1ID       = vertcat(Avg_Ch1ID,Fid_Ch1(Fid_Ch1(:,9)==i,9)); % Region ID
+    Avg_Ch1x        = vertcat(Avg_Ch1x,Fid_Ch1(Fid_Ch1(:,RegionID)==i,xCol)-offsetX);
+    Avg_Ch1y        = vertcat(Avg_Ch1y,Fid_Ch1(Fid_Ch1(:,RegionID)==i,yCol)-offsetY);
+    Avg_Ch1frame    = vertcat(Avg_Ch1frame,Fid_Ch1(Fid_Ch1(:,RegionID)==i,frameCol));
+    Avg_Ch1ID       = vertcat(Avg_Ch1ID,Fid_Ch1(Fid_Ch1(:,RegionID)==i,RegionID)); % Region ID
     
 end
 
@@ -148,13 +153,13 @@ Avg_Ch2x = []; Avg_Ch2y = []; Avg_Ch2 = []; Avg_Ch2frame = [];Avg_Ch2ID = [];
 
 for i = selectedFid;
     
-    target = find(Fid_Ch2(:,9)==i & Fid_Ch2(:,frameCol)<1000);
+    target = find(Fid_Ch2(:,RegionID)==i & Fid_Ch2(:,frameCol)<1000);
     offsetX = median(Fid_Ch2(target,xCol)); offsetY = median(Fid_Ch2(target,yCol));
     
-    Avg_Ch2x        = vertcat(Avg_Ch2x,Fid_Ch2(Fid_Ch2(:,9)==i,xCol)-offsetX);
-    Avg_Ch2y        = vertcat(Avg_Ch2y,Fid_Ch2(Fid_Ch2(:,9)==i,yCol)-offsetY);
-    Avg_Ch2frame    = vertcat(Avg_Ch2frame,Fid_Ch2(Fid_Ch2(:,9)==i,frameCol));
-    Avg_Ch2ID       = vertcat(Avg_Ch2ID,Fid_Ch2(Fid_Ch2(:,9)==i,9)); % Region ID
+    Avg_Ch2x        = vertcat(Avg_Ch2x,Fid_Ch2(Fid_Ch2(:,RegionID)==i,xCol)-offsetX);
+    Avg_Ch2y        = vertcat(Avg_Ch2y,Fid_Ch2(Fid_Ch2(:,RegionID)==i,yCol)-offsetY);
+    Avg_Ch2frame    = vertcat(Avg_Ch2frame,Fid_Ch2(Fid_Ch2(:,RegionID)==i,frameCol));
+    Avg_Ch2ID       = vertcat(Avg_Ch2ID,Fid_Ch2(Fid_Ch2(:,RegionID)==i,RegionID)); % Region ID
     
 end
 
@@ -245,10 +250,10 @@ close all
 
 %%%%%
 
-NbrBins             = 100;
+NbrBins             = 50;
 radius              = 200; % Radius around the fiducial center
 smoothingFactor     = 100;
-startFrame          = 1000;
+startFrame          = 2000;
 
 %%%%%
 
@@ -284,45 +289,68 @@ legend('noisy data','smoothing spline'), hold off
 axis([0 max(Avg_Ch1_new(:,1)) -radius radius])
 axis square; box on
 
-% Correct Channel 1 Averages Tracks
+%%%%%%%%%%%%%%% Correct Channel 1 Averages Tracks
 
-Avg_Ch1_new(:,4) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, Avg_Ch1_new(:,1)); % spline fit of the X Ch1
-Avg_Ch1_new(:,5) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, Avg_Ch1_new(:,1)); % spline fit of the Y Ch1
+% 1. Calculate the dirft vs. frame curve
 
-Avg_Ch1_new(1:startFrame,4) = 0;
-Avg_Ch1_new(1:startFrame,5) = 0;
+Avg_Ch1_new(:,4) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, Avg_Ch1_new(:,1)); % spline fit of the X Ch1 acc frame
+Avg_Ch1_new(:,5) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, Avg_Ch1_new(:,1)); % spline fit of the Y Ch1 acc frame
 
-Avg_Ch1_new(:,4) = Avg_Ch1_new(:,4)-Avg_Ch1_new(startFrame,4); % deltaX
-Avg_Ch1_new(:,5) = Avg_Ch1_new(:,5)-Avg_Ch1_new(startFrame,5); % deltaY
+% 2. Subtract the value at startFrame
 
-% Correct Channel 1 Fiducial Tracks
+Avg_Ch1_new(:,4) = Avg_Ch1_new(:,4)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaX
+Avg_Ch1_new(:,5) = Avg_Ch1_new(:,5)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaY
+
+% 3. Set everything <startFrame = 0
+
+Avg_Ch1_new(Avg_Ch1_new(:,1)<startFrame,4) = 0; % preallocate delta column to 0
+Avg_Ch1_new(Avg_Ch1_new(:,1)<startFrame,5) = 0; % preallocate delta column to 0
+
+%%%%%%%%%%%%%%% Correct Channel 1 Fiducial Tracks
+
+% 1. Calculate the dirft vs. frame curve
 
 Fid_Ch1(:,deltaXCol+1) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, Fid_Ch1(:,frameCol));
 Fid_Ch1(:,deltaYCol+1) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, Fid_Ch1(:,frameCol));
 
-Fid_Ch1(1:startFrame,deltaXCol+1) = 0;
-Fid_Ch1(1:startFrame,deltaYCol+1) = 0;
+% 2. Subtract the value at startFrame
 
-Fid_Ch1(:,deltaXCol+1) = Fid_Ch1(:,deltaXCol+1)-Fid_Ch1(startFrame,deltaXCol+1); % deltaX
-Fid_Ch1(:,deltaYCol+1) = Fid_Ch1(:,deltaYCol+1)-Fid_Ch1(startFrame,deltaYCol+1); % deltaY
+Fid_Ch1(:,deltaXCol+1) = Fid_Ch1(:,deltaXCol+1)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaX
+Fid_Ch1(:,deltaYCol+1) = Fid_Ch1(:,deltaYCol+1)-csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, startFrame); % deltaY
+
+% 3. Set everything <startFrame = 0
+
+Fid_Ch1(Fid_Ch1(:,frameCol)<startFrame,deltaXCol+1) = 0; % preallocate delta column to 0
+Fid_Ch1(Fid_Ch1(:,frameCol)<startFrame,deltaYCol+1) = 0;
+
+% 4. Correct the XY coordinates
+
+Fid_Ch1_DC = [];
+Fid_Ch1_DC(:,xCol)      = Fid_Ch1(:,xCol) - Fid_Ch1(:,deltaXCol+1); % deltaX
+Fid_Ch1_DC(:,yCol)      = Fid_Ch1(:,yCol) - Fid_Ch1(:,deltaYCol+1); % deltaY
+Fid_Ch1_DC(:,frameCol)  = Fid_Ch1(:,frameCol); % deltaY
+Fid_Ch1_DC(:,4)         = Fid_Ch1(:,RegionID); % deltaY
 
 % Test it
-% scatter(Fid_Ch1(:,frameCol),Fid_Ch1(:,xCol)-Fid_Ch1(:,deltaXCol),1,'k');hold on;
-% scatter(Fid_Ch1(:,frameCol),Fid_Ch1(:,yCol)-Fid_Ch1(:,deltaYCol),1,'r');
+% figure
+% scatter(Fid_Ch1_DC(:,frameCol),Fid_Ch1_DC(:,xCol),1,'k');hold on;
+% scatter(Fid_Ch1_DC(:,frameCol),Fid_Ch1_DC(:,yCol),1,'r');
 
-% Correct Channel 1 locs
+%%%%%%%%%%%%%%% Correct Channel 1 locs
 
-locs_Ch1(:,deltaXCol) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, locs_Ch1(:,frameCol));
-locs_Ch1(:,deltaYCol) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, locs_Ch1(:,frameCol));
+locs_Ch1_DC = locs_Ch1;
 
-locs_Ch1(1:startFrame,deltaXCol) = 0;
-locs_Ch1(1:startFrame,deltaYCol) = 0;
+locs_Ch1_DC(:,deltaXCol) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, locs_Ch1_DC(:,frameCol));  % deltaX
+locs_Ch1_DC(:,deltaYCol) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, locs_Ch1_DC(:,frameCol));  % deltaY
 
-locs_Ch1(:,deltaXCol) = locs_Ch1(:,deltaXCol)-locs_Ch1(startFrame,deltaXCol); % deltaX
-locs_Ch1(:,deltaYCol) = locs_Ch1(:,deltaYCol)-locs_Ch1(startFrame,deltaYCol); % deltaY
+locs_Ch1_DC(:,deltaXCol) = locs_Ch1_DC(:,deltaXCol)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaX - deltaX(startFrame)
+locs_Ch1_DC(:,deltaYCol) = locs_Ch1_DC(:,deltaYCol)-csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, startFrame); % deltaY - deltaY(startFrame)
 
-locs_Ch1(:,xCol) = locs_Ch1(:,xCol)-locs_Ch1(:,deltaXCol); % substract deltaX from X Col
-locs_Ch1(:,yCol) = locs_Ch1(:,yCol)-locs_Ch1(:,deltaYCol); % substract deltaY from Y Col
+locs_Ch1_DC(locs_Ch1_DC(:,frameCol)<startFrame,deltaXCol) = 0; 
+locs_Ch1_DC(locs_Ch1_DC(:,frameCol)<startFrame,deltaYCol) = 0;
+
+locs_Ch1_DC(:,xCol) = locs_Ch1_DC(:,xCol)-locs_Ch1_DC(:,deltaXCol); % substract deltaX from X Col
+locs_Ch1_DC(:,yCol) = locs_Ch1_DC(:,yCol)-locs_Ch1_DC(:,deltaYCol); % substract deltaY from Y Col
 
 
 subplot(2,3,3)
@@ -342,7 +370,7 @@ title('Y trajectory after correction');
 [splineResX,AvgCurveX,pX] = splineFit(Avg_Ch2_new(:,1),Avg_Ch2_new(:,2),NbrBins,radius,smoothingFactor);
 [splineResY,AvgCurveY,pY] = splineFit(Avg_Ch2_new(:,1),Avg_Ch2_new(:,3),NbrBins,radius,smoothingFactor);
 
-figure('Position', [200 200 700 500],'NumberTitle', 'off', 'Name', 'Drift correction Ch2')
+figure('Position', [1000 200 700 500],'NumberTitle', 'off', 'Name', 'Drift correction Ch2')
 subplot(2,3,1)
 scatter(Avg_Ch2_new(:,1),Avg_Ch2_new(:,2),2,'b'), hold on;
 plot(splineResX(:,1),splineResX(:,2),'r.'), hold on;
@@ -371,46 +399,68 @@ legend('noisy data','smoothing spline'), hold off
 axis([0 max(Avg_Ch2_new(:,1)) -radius radius])
 axis square; box on
 
-% Correct Channel 2 X Averages
+%%%%%%%%%%%%%%% Correct Channel 2 Averages Tracks
 
-Avg_Ch2_new(:,4) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, Avg_Ch2_new(:,1)); % spline fit of the X Ch1
-Avg_Ch2_new(:,5) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, Avg_Ch2_new(:,1)); % spline fit of the Y Ch1
+% 1. Calculate the dirft vs. frame curve
 
-Avg_Ch2_new(1:startFrame,4) = 0;
-Avg_Ch2_new(1:startFrame,5) = 0;
+Avg_Ch2_new(:,4) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, Avg_Ch2_new(:,1)); % spline fit of the X Ch1 acc frame
+Avg_Ch2_new(:,5) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, Avg_Ch2_new(:,1)); % spline fit of the Y Ch1 acc frame
 
-Avg_Ch2_new(:,4) = Avg_Ch2_new(:,4)-Avg_Ch2_new(startFrame,4); % deltaX
-Avg_Ch2_new(:,5) = Avg_Ch2_new(:,5)-Avg_Ch2_new(startFrame,5); % deltaY
+% 2. Subtract the value at startFrame
 
-% Correct Channel 2 Fiducial Tracks
+Avg_Ch2_new(:,4) = Avg_Ch2_new(:,4)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaX
+Avg_Ch2_new(:,5) = Avg_Ch2_new(:,5)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaY
+
+% 3. Set everything <startFrame = 0
+
+Avg_Ch2_new(Avg_Ch2_new(:,1)<startFrame,4) = 0; % preallocate delta column to 0
+Avg_Ch2_new(Avg_Ch2_new(:,1)<startFrame,5) = 0; % preallocate delta column to 0
+
+%%%%%%%%%%%%%%% Correct Channel 1 Fiducial Tracks
+
+% 1. Calculate the dirft vs. frame curve
 
 Fid_Ch2(:,deltaXCol+1) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, Fid_Ch2(:,frameCol));
 Fid_Ch2(:,deltaYCol+1) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, Fid_Ch2(:,frameCol));
 
-Fid_Ch2(1:startFrame,deltaXCol+1) = 0;
-Fid_Ch2(1:startFrame,deltaYCol+1) = 0;
+% 2. Subtract the value at startFrame
 
-Fid_Ch2(:,deltaXCol+1) = Fid_Ch2(:,deltaXCol+1)-Fid_Ch2(startFrame,deltaXCol+1); % deltaX
-Fid_Ch2(:,deltaYCol+1) = Fid_Ch2(:,deltaYCol+1)-Fid_Ch2(startFrame,deltaYCol+1); % deltaY
+Fid_Ch2(:,deltaXCol+1) = Fid_Ch2(:,deltaXCol+1)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaX
+Fid_Ch2(:,deltaYCol+1) = Fid_Ch2(:,deltaYCol+1)-csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, startFrame); % deltaY
+
+% 3. Set everything <startFrame = 0
+
+Fid_Ch2(Fid_Ch2(:,frameCol)<startFrame,deltaXCol+1) = 0; % preallocate delta column to 0
+Fid_Ch2(Fid_Ch2(:,frameCol)<startFrame,deltaYCol+1) = 0;
+
+% 4. Correct the XY coordinates
+
+Fid_Ch2_DC = [];
+Fid_Ch2_DC(:,xCol)      = Fid_Ch2(:,xCol) - Fid_Ch2(:,deltaXCol+1); % deltaX
+Fid_Ch2_DC(:,yCol)      = Fid_Ch2(:,yCol) - Fid_Ch2(:,deltaYCol+1); % deltaY
+Fid_Ch2_DC(:,frameCol)  = Fid_Ch2(:,frameCol); % deltaY
+Fid_Ch2_DC(:,4)         = Fid_Ch2(:,RegionID); % deltaY
 
 % Test it
-% scatter(Fid_Ch2(:,frameCol),Fid_Ch2(:,xCol)-Fid_Ch2(:,deltaXCol+1),1,'k');hold on;
-% scatter(Fid_Ch2(:,frameCol),Fid_Ch2(:,yCol)-Fid_Ch2(:,deltaYCol+1),1,'r');
+% figure
+% scatter(Fid_Ch1_DC(:,frameCol),Fid_Ch1_DC(:,xCol),1,'k');hold on;
+% scatter(Fid_Ch1_DC(:,frameCol),Fid_Ch1_DC(:,yCol),1,'r');
 
-% Correct Channel 2 locs
+%%%%%%%%%%%%%%% Correct Channel 1 locs
 
-locs_Ch2(:,deltaXCol) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, locs_Ch2(:,frameCol));
-locs_Ch2(:,deltaYCol) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, locs_Ch2(:,frameCol));
+locs_Ch2_DC = locs_Ch2;
 
-locs_Ch2(1:startFrame,deltaXCol) = 0;
-locs_Ch2(1:startFrame,deltaYCol) = 0;
+locs_Ch2_DC(:,deltaXCol) = csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, locs_Ch2_DC(:,frameCol));  % deltaX
+locs_Ch2_DC(:,deltaYCol) = csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, locs_Ch2_DC(:,frameCol));  % deltaY
 
-locs_Ch2(:,deltaXCol) = locs_Ch2(:,deltaXCol)-locs_Ch2(startFrame,deltaXCol); % deltaX
-locs_Ch2(:,deltaYCol) = locs_Ch2(:,deltaYCol)-locs_Ch2(startFrame,deltaYCol); % deltaY
+locs_Ch2_DC(:,deltaXCol) = locs_Ch2_DC(:,deltaXCol)-csaps(AvgCurveX(:,1),AvgCurveX(:,2),pX/100, startFrame); % deltaX - deltaX(startFrame)
+locs_Ch2_DC(:,deltaYCol) = locs_Ch2_DC(:,deltaYCol)-csaps(AvgCurveY(:,1),AvgCurveY(:,2),pY/100, startFrame); % deltaY - deltaY(startFrame)
 
-locs_Ch2(:,xCol) = locs_Ch2(:,xCol)-locs_Ch2(:,deltaXCol); % substract deltaX from X Col
-locs_Ch2(:,yCol) = locs_Ch2(:,yCol)-locs_Ch2(:,deltaYCol); % substract deltaY from Y Col
+locs_Ch2_DC(locs_Ch2_DC(:,frameCol)<startFrame,deltaXCol) = 0; 
+locs_Ch2_DC(locs_Ch2_DC(:,frameCol)<startFrame,deltaYCol) = 0;
 
+locs_Ch2_DC(:,xCol) = locs_Ch2_DC(:,xCol)-locs_Ch2_DC(:,deltaXCol); % substract deltaX from X Col
+locs_Ch2_DC(:,yCol) = locs_Ch2_DC(:,yCol)-locs_Ch2_DC(:,deltaYCol); % substract deltaY from Y Col
 
 subplot(2,3,3)
 scatter(Avg_Ch2_new(:,1),Avg_Ch2_new(:,2)-Avg_Ch2_new(:,4),1,'b'), hold on;
@@ -424,171 +474,26 @@ axis([0 max(Avg_Ch2_new(:,1)) -radius radius])
 axis square; box on
 title('Y trajectory after correction');
 
-%% Calculate delta and subtract from locs
-% 
-% close all
-% 
-% minFrame = 2000;
-% 
-% % Correct the Fiducial Curves
-% 
-% splineRes(:,1) = xData;
-% splineRes(:,2) = csaps(AvgCurve(:,1),AvgCurve(:,2),p/100, splineRes(:,1));
-% 
-% 
-% Avg_Ch1_new(:,4) = polyval(fit_Ch1x,Avg_Ch1(:,frameCol));
-% Avg_Ch1_new(:,5) = polyval(fit_Ch1y,Avg_Ch1(:,frameCol));
-% 
-% % Calculate delta for locs
-% 
-% deltaX = zeros(length(locs_Ch1),1);
-% deltaX = zeros(length(locs_Ch1),1);
-% 
-% vx = find(locs_Ch1(:,frameCol)>minFrame);
-% 
-% deltaX(vx,1)       = polyval(fit_Ch1x,locs_Ch1(vx,frameCol));
-% deltaY(vx,1)       = polyval(fit_Ch1y,locs_Ch1(vx,frameCol));
-% 
-% locs_Ch1(:,deltaXCol) = deltaX;
-% locs_Ch1(:,deltaYCol) = deltaY;
-% 
-% locs_Ch1(:,xCol) = locs_Ch1(:,xCol)-deltaX;
-% locs_Ch1(:,yCol) = locs_Ch1(:,yCol)-deltaY;
-% 
-% subplot(2,1,1)
-% scatter(Avg_Ch1(:,3),Avg_Ch1(:,1)-Avg_Ch1(:,4),1,'g'); hold on;
-% title 
-% subplot(2,1,2)
-% scatter(Avg_Ch1(:,3),Avg_Ch1(:,2)-Avg_Ch1(:,5),1,'g'); hold on;
-
-
-%% Polynomial for each fiducial
-% 
-% Avg_Ch1x = []; Avg_Ch1y = []; selectedFid = [];
-% 
-% for i = 1:max(Fid_Ch1(:,end)); % For all fiducials
-% 
-% selectedFid = [];    
-% selectedFid(:,1) = Fid_Ch1(Fid_Ch1(:,9)==i,xCol)-mean(Fid_Ch1(Fid_Ch1(:,9)==i,xCol));
-% selectedFid(:,2) = Fid_Ch1(Fid_Ch1(:,9)==i,yCol)-mean(Fid_Ch1(Fid_Ch1(:,9)==i,yCol));
-% selectedFid(:,3) = Fid_Ch1(Fid_Ch1(:,9)==i,frameCol);
-% 
-% filter = 500;
-% 
-% vx = find(selectedFid(:,1)<filter & selectedFid(:,1)> -filter);
-% vy = find(selectedFid(:,2)<filter & selectedFid(:,2)> -filter);
-% 
-% factor = 10;
-% 
-% fit_Ch1x = polyfit(selectedFid(vx,3),selectedFid(vx,1),factor);
-% fit_Ch1y = polyfit(selectedFid(vy,3),selectedFid(vy,2),factor);
-% 
-% Fid_Ch1(:,5) = polyval(fit_Ch1x,Fid_Ch1(:,3));
-% Fid_Ch1(:,6) = polyval(fit_Ch1y,Fid_Ch1(:,3));   
-% 
-% Avg_Ch1x(:,i) = polyval(fit_Ch1x,locs_Ch1(:,3));
-% Avg_Ch1y(:,i) = polyval(fit_Ch1y,locs_Ch1(:,3));
-% 
-% end
-% 
-% % Average the fiducial tracks
-% 
-% Avg_Ch1(:,1) = mean(Avg_Ch1x,2);
-% Avg_Ch1(:,2) = mean(Avg_Ch1y,2);
-
-%% Polynomial of overlay
-
-% close all
-% 
-% filter = 500; factor = 15;
-% 
-% vx = find(Avg_Ch1(:,1)<filter & Avg_Ch1(:,1)> -filter);
-% vy = find(Avg_Ch1(:,2)<filter & Avg_Ch1(:,2)> -filter);
-% 
-% fit_Ch1x = polyfit(Avg_Ch1(vx,3),Avg_Ch1(vx,1),factor);
-% fit_Ch1y = polyfit(Avg_Ch1(vy,3),Avg_Ch1(vy,2),factor);
-% 
-% subplot(2,1,1)
-% scatter(Avg_Ch1(vx,3),Avg_Ch1(vx,1),1,'k'); hold on;
-% scatter(Avg_Ch1(vx,3),polyval(fit_Ch1x,Avg_Ch1(vx,3)),5,'r');
-% subplot(2,1,2)
-% scatter(Avg_Ch1(vy,3),Avg_Ch1(vy,2),1,'k'); hold on;
-% scatter(Avg_Ch1(vy,3),polyval(fit_Ch1y,Avg_Ch1(vy,3)),5,'r');
-
-%%  Substract Avg from Fid and Locs
-
-% close all
-% 
-% minFrame = 2000;
-% 
-% % Correct the Fiducial Curves
-% 
-% Avg_Ch1(:,4) = polyval(fit_Ch1x,Avg_Ch1(:,frameCol));
-% Avg_Ch1(:,5) = polyval(fit_Ch1y,Avg_Ch1(:,frameCol));
-% 
-% % Calculate delta for locs
-% 
-% deltaX = zeros(length(locs_Ch1),1);
-% deltaX = zeros(length(locs_Ch1),1);
-% 
-% vx = find(locs_Ch1(:,frameCol)>minFrame);
-% 
-% deltaX(vx,1)       = polyval(fit_Ch1x,locs_Ch1(vx,frameCol));
-% deltaY(vx,1)       = polyval(fit_Ch1y,locs_Ch1(vx,frameCol));
-% 
-% locs_Ch1(:,deltaXCol) = deltaX;
-% locs_Ch1(:,deltaYCol) = deltaY;
-% 
-% locs_Ch1(:,xCol) = locs_Ch1(:,xCol)-deltaX;
-% locs_Ch1(:,yCol) = locs_Ch1(:,yCol)-deltaY;
-% 
-% subplot(2,1,1)
-% scatter(Avg_Ch1(:,3),Avg_Ch1(:,1)-Avg_Ch1(:,4),1,'g'); hold on;
-% title 
-% subplot(2,1,2)
-% scatter(Avg_Ch1(:,3),Avg_Ch1(:,2)-Avg_Ch1(:,5),1,'g'); hold on;
-
-%% Save DC files
-
-NameCorrected = [nameC1 '_DC.csv'];
-
-fileID = fopen(NameCorrected,'w');
-fprintf(fileID,[[line,',dx [nm],dy [nm]'] ' \n']);
-dlmwrite(NameCorrected,locs_Ch1,'-append');
-fclose('all');
-
-fprintf('\n -- Saved Ch1 --\n');
-
-NameCorrected = [nameC2 '_DC.csv'];
-
-fileID = fopen(NameCorrected,'w');
-fprintf(fileID,[[line,',dx [nm],dy [nm]'] ' \n']);
-dlmwrite(NameCorrected,locs_Ch2,'-append');
-fclose('all');
-
-fprintf('\n -- Saved Ch2 --\n');
-
-
 %% Find CoM of Fiducials and substract from Ch2
 
 close all;
 
 center_Ch1 = [];center_Ch2 = [];
 
-RegionID = 9;
+RegionID = 4;
 
 
 for i = selectedFid;
     
-    center_Ch1(i+1,1) = median(Fid_Ch1(Fid_Ch1(:,RegionID)==i,xCol));
-    center_Ch1(i+1,2) = median(Fid_Ch1(Fid_Ch1(:,RegionID)==i,yCol));
+    center_Ch1(i+1,1) = median(Fid_Ch1_DC(Fid_Ch1_DC(:,RegionID)==i,xCol));
+    center_Ch1(i+1,2) = median(Fid_Ch1_DC(Fid_Ch1_DC(:,RegionID)==i,yCol));
     
 end
 
 for i = selectedFid;;
     
-    center_Ch2(i+1,1) = median(Fid_Ch2(Fid_Ch2(:,RegionID)==i,xCol));
-    center_Ch2(i+1,2) = median(Fid_Ch2(Fid_Ch2(:,RegionID)==i,yCol));
+    center_Ch2(i+1,1) = median(Fid_Ch2_DC(Fid_Ch2_DC(:,RegionID)==i,xCol));
+    center_Ch2(i+1,2) = median(Fid_Ch2_DC(Fid_Ch2_DC(:,RegionID)==i,yCol));
     
 end
 
@@ -672,18 +577,30 @@ title(['Fid After 2nd trans TRE = ', num2str(mean(TRE))]);
 
 fprintf('\n -- Linear Transformation extracted and saved --\n')
 
-%% Apply Linear Translation and Save Data again
+%% Apply Linear Translation and Save Data 
 
-locs_Ch2(:,xCol) = locs_Ch2(:,xCol) + mean(deltaXY(:,1));
-locs_Ch2(:,yCol) = locs_Ch2(:,yCol) + mean(deltaXY(:,2));
+NameCorrected = [name_Ch1 '_DC' ext_Ch1];
 
-NameCorrected = [nameC2 '_DC_corrected.csv'];
-
+cd(filepath_Ch1);
 fileID = fopen(NameCorrected,'w');
-fprintf(fileID,[[line,',dx [nm],dy [nm]'] ' \n']);
-dlmwrite(NameCorrected,locs_Ch2,'-append');
+fprintf(fileID,[[line,',Channel ID, dx [nm],dy [nm]'] ' \n']);
+dlmwrite(NameCorrected,locs_Ch1_DC,'-append');
+fclose('all');
+
+fprintf('\n -- Saved Ch1 --\n');
+
+
+locs_Ch2_DC(:,xCol) = locs_Ch2_DC(:,xCol) + mean(deltaXY(:,1));
+locs_Ch2_DC(:,yCol) = locs_Ch2_DC(:,yCol) + mean(deltaXY(:,2));
+
+NameCorrected = [name_Ch2 '_DC_corrected' ext_Ch2];
+
+cd(filepath_Ch2);
+fileID = fopen(NameCorrected,'w');
+fprintf(fileID,[[line,',Channel ID, dx [nm],dy [nm]'] ' \n']);
+dlmwrite(NameCorrected,locs_Ch2_DC,'-append');
 fclose('all');
 
 fprintf('\n -- Saved Ch2 --\n');
 
-
+fprintf(['\n -- Finished Processing FOV ' num2str(FOV) ' --\n']);
