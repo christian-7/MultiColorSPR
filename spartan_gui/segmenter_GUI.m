@@ -22,7 +22,7 @@ function varargout = segmenter_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenter_GUI
 
-% Last Modified by GUIDE v2.5 14-Mar-2018 21:54:59
+% Last Modified by GUIDE v2.5 15-Mar-2018 22:04:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -166,8 +166,8 @@ function fovID_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of fovID as text
 %        str2double(get(hObject,'String')) returns contents of fovID as a double
 
-handles = guidata(hObject);
-handles.FOV = str2double(get(hObject,'String'))
+handles         = guidata(hObject);
+handles.FOV     = str2double(get(hObject,'String'))
 guidata(hObject, handles); % Update handles structure
 
 
@@ -415,7 +415,18 @@ function selectImportFile_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileName_Ch1,Path_Ch1] = uigetfile({'*.mat'},'Select lile with import specifications');
+handles         = guidata(hObject);
+
+[handles.BatchFile,handles.BatchFilePath] = uigetfile({'*.m'},'Select file with import specifications');
+
+ if isempty(handles.BatchFile)==0;
+    
+ set(handles.selectImportFile,'BackgroundColor','green');
+    
+ else end
+
+guidata(hObject, handles); % Update handles structure
+
 
 
 % --- Executes on button press in startSegmentation.
@@ -674,3 +685,21 @@ particles = handles.Cent;
 filename = 'FOV_X_extractedParticles.mat';
 
 uisave('particles',filename);
+
+
+% --- Executes on button press in loadFOV.
+function loadFOV_Callback(hObject, eventdata, handles)
+% hObject    handle to loadFOV (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles         = guidata(hObject);
+
+cd(handles.BatchFilePath);
+
+[handles.FileInfo] = generateFilename(handles.FOV);
+
+
+
+guidata(hObject, handles);
+
