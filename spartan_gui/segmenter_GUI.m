@@ -90,6 +90,7 @@ function popChannel_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popChannel contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popChannel
 % Choose default command line output for segmenter_GUI
+
 handles.output = hObject;
 
 contents = cellstr(get(hObject,'String'));
@@ -256,9 +257,7 @@ function savePath_Callback(hObject, eventdata, handles)
 
 toSave = handles.T_lwm;
 
-dname = uigetdir;
-
-uisave('toSave','T_lwm_data.mat');
+uisave('toSave',handles.FileInfo{3,2});
 
 
 % --- Executes during object creation, after setting all properties.
@@ -499,7 +498,7 @@ end
 
 [handles.boundaries,L,N,A]   = bwboundaries(handles.binary);
 
-disp(' - Particles segmented - ');
+fprintf('\n -- Particles segmented -- \n');
 
 guidata(hObject, handles); % Update handles structure
 
@@ -553,9 +552,6 @@ function extractParticles_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 handles             = guidata(hObject);
-
-handles
-handles.minLengthCh1
 
 if  isempty(strmatch('Single color',handles.input)); % then its two color
 
@@ -682,9 +678,7 @@ handles         = guidata(hObject);
 
 particles = handles.Cent;
 
-filename = 'FOV_X_extractedParticles.mat';
-
-uisave('particles',filename);
+uisave('particles',handles.FileInfo{3,2});
 
 
 % --- Executes on button press in loadFOV.
@@ -695,11 +689,36 @@ function loadFOV_Callback(hObject, eventdata, handles)
 
 handles         = guidata(hObject);
 
+handles.input = 'Dual color';
+
+
+    set(handles.WF1,'BackgroundColor','white');
+    set(handles.WF2,'BackgroundColor','white');
+    set(handles.locsCh1,'BackgroundColor','white');
+    set(handles.locsCh2,'BackgroundColor','white');
+
 cd(handles.BatchFilePath);
 
-[handles.FileInfo] = generateFilename(handles.FOV);
+[handles.FileInfo] = fileInformation(handles.FOV);
 
+[handles.WFCh1,handles.WFCh2,handles.locs_Ch1,handles.locs_Ch2,h] = openFiles(handles.FileInfo);
 
+fprintf(['\n -- Files Loaded FOV ', num2str(handles.FOV), ' -- \n']);
 
+    handles.xCol      = strmatch('x [nm]',h);
+    handles.yCol      = strmatch('y [nm]',h);
+    handles.frameCol  = strmatch('frame',h);
+    
+fprintf('\n -- Header Loaded -- \n');
+
+    if isempty(handles.WFCh1)==0;
+    
+    set(handles.WF1,'BackgroundColor','green');
+    set(handles.WF2,'BackgroundColor','green');
+    set(handles.locsCh1,'BackgroundColor','green');
+    set(handles.locsCh2,'BackgroundColor','green');
+    
+    else end
+    
 guidata(hObject, handles);
 

@@ -1,4 +1,4 @@
-function [NewName] = generateFilename(FOV);
+% function [NewName] = generateFilename(FOV);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -12,26 +12,26 @@ function [NewName] = generateFilename(FOV);
 
 % Input
 
-path     = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data' 
-filename = 'humanCent_Cep57_DL755_4_1_MMStack_1_Localizations.csv'
-savepath = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data'
+path     = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data/HTP_example';
+filename = 'humanCent_Cep57_DL755_4_1_MMStack_1_Localizations.csv';
+savepath = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data/HTP_example';
 
 Channel  = {'A647','DL755'}; % channel names;
 Sample   = {'Sas6','Cep152'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Find column names
+% Define Path
 
-cd(path);
+ NewName{1,1} = [path,'/' Sample{1,1},'_', Channel{1,1},'_', num2str(FOV), '_1'];
+ NewName{2,1} = [path,'/' Sample{1,2},'_', Channel{1,2},'_', num2str(FOV), '_1'];
+ 
+% Define Filename
 
-file       = fopen(filename);
-line       = fgetl(file);
-h          = regexp( line, ',', 'split' );
-
-xCol       = strmatch('x [nm]',h);
-yCol       = strmatch('y [nm]',h);
-
+ NewName{1,2} = [path,'/' Sample{1,1},'_', Channel{1,1},'_', num2str(FOV), '_1'];
+ NewName{2,2} = [path,'/' Sample{1,2},'_', Channel{1,2},'_', num2str(FOV), '_1'];
+ 
+ 
 % Find name composition and separate them
 
 h           = regexp(filename, '_', 'split' );
