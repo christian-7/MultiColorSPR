@@ -22,7 +22,7 @@ function varargout = particleFilter_GUI(varargin)
 
 % Edit the above text to modify the response to help particleFilter_GUI
 
-% Last Modified by GUIDE v2.5 23-Mar-2018 20:10:04
+% Last Modified by GUIDE v2.5 27-Mar-2018 22:27:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,11 +55,13 @@ function particleFilter_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for particleFilter_GUI
 handles.output = hObject;
 
+global global_struct;
+
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes particleFilter_GUI wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.particleFilter);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -70,6 +72,8 @@ function varargout = particleFilter_GUI_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
+
+global global_struct;
 varargout{1} = handles.output;
 
 
@@ -87,7 +91,7 @@ function loadPart_Callback(hObject, eventdata, handles)
     
     [path,Name_Ch1,ext_Ch1] = fileparts(FileName_Ch1);
     
-    handles.Ext_Ch1     = ext_Ch1;
+    handles.Ext_Ch1     = ext_Ch1 ;
     handles.Path_Ch1    = Path_Ch1;
     handles.Name_Ch1    = Name_Ch1;
     
@@ -112,12 +116,78 @@ function filter1_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.output = hObject;
+
+    FirstParticleFilter;
+    
+    waitfor(FirstParticleFilter);
+      
+    set(handles.filter1,'BackgroundColor','green');
+    
+    
+global global_struct;
+
+
+handles.maxInt_Ch1 = global_struct.maxInt_Ch1; 
+handles.maxInt_Ch2 = global_struct.maxInt_Ch2;
+handles.minInt_Ch1 = global_struct.minInt_Ch1;
+handles.minInt_Ch2 = global_struct.minInt_Ch2;
+
+handles.minPhot_Ch1 = global_struct.minPhot_Ch1; 
+handles.minPhot_Ch2 = global_struct.minPhot_Ch2; 
+
+handles.minFrame_Ch1 = global_struct.minFrame_Ch1;
+handles.minFrame_Ch2 = global_struct.minFrame_Ch2;
+
+handles.maxSigma_Ch1 = global_struct.maxSigma_Ch1;
+handles.maxSigma_Ch2 = global_struct.maxSigma_Ch2;
+
+handles.minSigma_Ch1 = global_struct.minSigma_Ch1;
+handles.minSigma_Ch2 = global_struct.minSigma_Ch2;
+
+handles.maxUnc_Ch1 = global_struct.maxUnc_Ch1;
+handles.maxUnc_Ch2 = global_struct.maxUnc_Ch2;
+  
+fprintf('\n -- Parameters Set -- \n');
+
+% Apply the filters
+  
+[handles.Particles_filt, handles.Particles_filt_2C] = applyFirstFilter(handles.Particles,handles);
+
+fprintf('\n -- Particles Filtered -- \n');
+
+guidata(hObject, handles); % Update handles structure
+
+    
 
 % --- Executes on button press in defineDBSCAN.
 function defineDBSCAN_Callback(hObject, eventdata, handles)
 % hObject    handle to defineDBSCAN (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.output = hObject;
+
+    defineDBSCAN_GUI;
+    
+    waitfor(defineDBSCAN_GUI);
+      
+    set(handles.defineDBSCAN,'BackgroundColor','green');
+    
+    
+global global_struct;
+
+
+handles.K         = global_struct.K;
+handles.Eps       = global_struct.Eps;
+handles.minLength = global_struct.minLength;
+  
+fprintf('\n -- Parameters Set -- \n');
+
+guidata(hObject, handles); % Update handles structure
+
+
+
 
 
 % --- Executes on button press in calculateShape.
@@ -139,3 +209,39 @@ function renderParticles_Callback(hObject, eventdata, handles)
 % hObject    handle to renderParticles (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in runBatchDBSCAN.
+function runBatchDBSCAN_Callback(hObject, eventdata, handles)
+% hObject    handle to runBatchDBSCAN (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.output = hObject;
+
+tic
+
+DBSCAN_filtered = {};
+
+for m = 1:length(handles.Particles_filt_2C);
+    
+[DBSCAN_filtered_temp]   = DBSCAN_batch_2C_3D(handles.Particles_filt_2C{m,1},handles.minLength,handles.minLength, handles.K, handles.Eps);
+
+DBSCAN_filtered     = vertcat(DBSCAN_filtered,DBSCAN_filtered_temp);
+
+clear DBSCAN_filtered_temp
+
+clc
+X = [' Finished DBSCAN ',num2str(m),' of ',num2str(length(handles.Particles_filt_2C)),];
+disp(X)
+
+end
+
+% save(savename,'DBSCAN_filtered','-v7.3');
+
+fprintf(' -- DBSCAN computed in %f sec -- \n',toc)
+
+set(handles.runBatchDBSCAN,'BackgroundColor','green');
+
+guidata(hObject, handles); % Update handles structure
+

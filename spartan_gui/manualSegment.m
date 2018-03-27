@@ -173,7 +173,6 @@ h = findobj('Tag','segmenterHead');
     g1data = guidata(h);
  end
  
- 
 axes(handles.figDisplay);
 imshow(g1data.PrimaryWF,[handles.WFmin handles.WFmax]);
 
