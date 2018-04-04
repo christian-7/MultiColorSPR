@@ -22,7 +22,7 @@ function varargout = particleFilter_GUI(varargin)
 
 % Edit the above text to modify the response to help particleFilter_GUI
 
-% Last Modified by GUIDE v2.5 27-Mar-2018 22:27:50
+% Last Modified by GUIDE v2.5 04-Apr-2018 15:19:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,6 +56,15 @@ function particleFilter_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 global global_struct;
+
+
+handles.RgFilter        = [10, 10, 300, 300];
+handles.EccFilter       = [1, 1, 3, 3];
+handles.LengthFilter    = [10, 10, 2e3, 2e4];
+handles.FRCFilter       = [5, 5, 60, 100];
+handles.useAll          = 0;
+handles.pxlSize         = 10;
+handles.channelID       = 12;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -196,6 +205,21 @@ function calculateShape_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.output = hObject;
+
+[DBSCAN_filtered_shape,Data_DBSCANed] = calculateShape(handles.DBSCAN_filtered);
+
+handles.DBSCAN_filtered_shape = DBSCAN_filtered_shape;
+handles.Data_DBSCANed         = Data_DBSCANed;
+
+
+if isempty(handles.DBSCAN_filtered_shape)==0;
+    
+    set(handles.calculateShape,'BackgroundColor','green');
+    
+else end
+
+guidata(hObject, handles); % Update handles structure
 
 % --- Executes on button press in filter2.
 function filter2_Callback(hObject, eventdata, handles)
@@ -203,12 +227,30 @@ function filter2_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.output = hObject;
+
+[Cent_selected] = filterParticles(handles.DBSCAN_filtered_shape,handles);
+
+X = [num2str(size(Cent_selected,1)) '/' num2str(size(handles.DBSCAN_filtered_shape,1)) '  particles are left'];
+
+disp(X)
+
+handles.Cent_selected = Cent_selected;
+
+guidata(hObject, handles); % Update handles structure
+
 
 % --- Executes on button press in renderParticles.
 function renderParticles_Callback(hObject, eventdata, handles)
 % hObject    handle to renderParticles (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.output = hObject;
+
+renderParticles(handles.Cent_selected, handles.channelID, handles.pxlSize);
+
+guidata(hObject, handles); % Update handles structure
 
 
 % --- Executes on button press in runBatchDBSCAN.
@@ -237,6 +279,8 @@ disp(X)
 
 end
 
+handles.DBSCAN_filtered = DBSCAN_filtered;
+
 % save(savename,'DBSCAN_filtered','-v7.3');
 
 fprintf(' -- DBSCAN computed in %f sec -- \n',toc)
@@ -245,3 +289,211 @@ set(handles.runBatchDBSCAN,'BackgroundColor','green');
 
 guidata(hObject, handles); % Update handles structure
 
+
+% --- Executes on button press in showPlots.
+function showPlots_Callback(hObject, eventdata, handles)
+% hObject    handle to showPlots (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+plotParamSummary(handles.Data_DBSCANed);
+
+
+% --- Executes on button press in useAll.
+function useAll_Callback(hObject, eventdata, handles)
+% hObject    handle to useAll (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useAll
+
+handles         = guidata(hObject);
+
+handles.useAll = get(hObject,'Value');
+
+guidata(hObject, handles); % Update handles structure
+
+
+function lengthFilter_Callback(hObject, eventdata, handles)
+% hObject    handle to lengthFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of lengthFilter as text
+%        str2double(get(hObject,'String')) returns contents of lengthFilter as a double
+
+handles         = guidata(hObject);
+
+string2 = regexp(get(hObject,'String'), ',', 'split' )
+
+handles.lengthFilter = str2double(string2); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function lengthFilter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lengthFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function RgFilter_Callback(hObject, eventdata, handles)
+% hObject    handle to RgFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of RgFilter as text
+%        str2double(get(hObject,'String')) returns contents of RgFilter as a double
+
+
+handles         = guidata(hObject);
+
+string2 = regexp(get(hObject,'String'), ',', 'split' )
+
+handles.RgFilter = str2double(string2); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function RgFilter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to RgFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function EccFilter_Callback(hObject, eventdata, handles)
+% hObject    handle to EccFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of EccFilter as text
+%        str2double(get(hObject,'String')) returns contents of EccFilter as a double
+
+handles         = guidata(hObject);
+
+string2 = regexp(get(hObject,'String'), ',', 'split' )
+
+handles.EccFilter = str2double(string2); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function EccFilter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to EccFilter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function FRCFilt_Callback(hObject, eventdata, handles)
+% hObject    handle to FRCFilt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of FRCFilt as text
+%        str2double(get(hObject,'String')) returns contents of FRCFilt as a double
+
+handles         = guidata(hObject);
+
+string2 = regexp(get(hObject,'String'), ',', 'split' )
+
+handles.FRCFilter = str2double(string2); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function FRCFilt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FRCFilt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function channelID_Callback(hObject, eventdata, handles)
+% hObject    handle to channelID (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of channelID as text
+%        str2double(get(hObject,'String')) returns contents of channelID as a double
+
+handles         = guidata(hObject);
+
+handles.channelID = str2double(get(hObject,'String')); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function channelID_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to channelID (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function pxlSize_Callback(hObject, eventdata, handles)
+% hObject    handle to pxlSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of pxlSize as text
+%        str2double(get(hObject,'String')) returns contents of pxlSize as a double
+
+handles         = guidata(hObject);
+
+handles.pxlSize = str2double(get(hObject,'String')); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function pxlSize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pxlSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
