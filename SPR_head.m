@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 08-Mar-2018 22:55:06
+% Last Modified by GUIDE v2.5 04-Apr-2018 15:41:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,8 +55,9 @@ function SPR_head_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for SPR_head
 
 addpath('functions');
-addpath('elements');
 addpath('files');
+addpath('spartan_gui')
+addpath('smlm_simulator')
 
 handles.output = hObject;
 
@@ -224,17 +225,19 @@ function Untitled_19_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-function Untitled_13_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_13 (see GCBO)
+function segment_Callback(hObject, eventdata, handles)
+% hObject    handle to segment (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+segmenter_GUI
 
 
 % --------------------------------------------------------------------
-function Untitled_14_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_14 (see GCBO)
+function particleFilter_Callback(hObject, eventdata, handles)
+% hObject    handle to particleFilter (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+particleFilter_GUI
 
 
 % --------------------------------------------------------------------
@@ -259,7 +262,16 @@ function Untitled_18_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-function spr_simulator_Callback(hObject, eventdata, handles)
-% hObject    handle to spr_simulator (see GCBO)
+function sprSimulator_Callback(hObject, eventdata, handles)
+% hObject    handle to sprSimulator (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+
+% --------------------------------------------------------------------
+function startSim_Callback(hObject, eventdata, handles)
+% hObject    handle to startSim (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+simulator_GUI
