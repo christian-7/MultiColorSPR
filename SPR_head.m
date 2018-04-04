@@ -61,7 +61,7 @@ addpath('files');
 handles.output = hObject;
 
 axes(handles.axes1);
-imshow(imread('LEBlogo_CMYK.jpg'));
+imshow(imread('spartan_logo.png'));
 
 
 % Update handles structure
