@@ -250,6 +250,11 @@ handles.output = hObject;
 
 renderParticles(handles.Cent_selected, handles.channelID, handles.pxlSize);
 
+cd(handles.Path_Ch1); toSave = handles.DBSCAN_filtered_shape;
+
+toSave = handles.DBSCAN_filtered_shape; filename1 = [handles.Name_Ch1 '_DBSCAN_filtered.mat'];save(filename1,'toSave');
+toSave = handles.Cent_selected;         filename2 = [handles.Name_Ch1 '_selected.mat'];       save(filename2,'toSave');
+
 guidata(hObject, handles); % Update handles structure
 
 
