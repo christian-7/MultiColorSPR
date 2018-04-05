@@ -232,5 +232,7 @@ training(:,end+1) = handles.response;
 cd(handles.Path_Ch1); 
 filename1 = [handles.Name_Ch1 '_training.mat']; save(filename1,'training');
 
+% Add table
+
 
 
