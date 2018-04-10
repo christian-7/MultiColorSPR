@@ -22,7 +22,7 @@ function varargout = averaging_GUI(varargin)
 
 % Edit the above text to modify the response to help averaging_GUI
 
-% Last Modified by GUIDE v2.5 10-Apr-2018 12:08:07
+% Last Modified by GUIDE v2.5 10-Apr-2018 15:03:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,10 @@ function averaging_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for averaging_GUI
 handles.output = hObject;
 
+handles.PartNum = 20;
+handles.Iter    = 5;
+hanldes.Mode    = 0;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -73,8 +77,159 @@ function varargout = averaging_GUI_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
+% --- Executes on button press in loadData.
+function loadData_Callback(hObject, eventdata, handles)
+% hObject    handle to loadData (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+    [FileName_Ch1,Path_Ch1] = uigetfile({'*.tif'},'Select first image');
+    
+    % Read the selected file into the variable
+    
+    disp('Reading Particles ...');
+    
+    [path,Name_Ch1,ext_Ch1] = fileparts(FileName_Ch1);
+    
+    handles.Ext_Particle          = ext_Ch1 ;
+    handles.Path_Particle         = Path_Ch1;
+    handles.Name_Particle         = Name_Ch1;
+    
+    cd(handles.Path_Particle);
+    
+    handles.ReferenceIm = imread('reference_Im.tif');
+    
+    NameBase = regexp(handles.Name_Particle, '_', 'split' );
+    handles.PartNum = size(dir([NameBase{1,1} '*' handles.Ext_Particle]),1);
+    
+    textLabel = ['Total particles = ', num2str(handles.PartNum)];
+    set(handles.particleNumber, 'String', textLabel);
+    
+    % Load reference image
+    
+    axes(handles.axes1);cla reset;box on;
+    imagesc(handles.ReferenceIm); 
+    axis square
+    colormap hot
+   
+    if isempty(handles.Path_Particle)==0;
+    
+    set(handles.loadData,'BackgroundColor','green');
+    
+    else end
+    
+    disp('Path information set');
+
+    guidata(hObject, handles); % Update handles structure
+
+
+
+function fieldMode_Callback(hObject, eventdata, handles)
+% hObject    handle to fieldMode (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fieldMode as text
+%        str2double(get(hObject,'String')) returns contents of fieldMode as a double
+
+handles         = guidata(hObject);
+
+handles.Mode = str2double(get(hObject,'String')); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function fieldMode_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fieldMode (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function fieldIter_Callback(hObject, eventdata, handles)
+% hObject    handle to fieldIter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fieldIter as text
+%        str2double(get(hObject,'String')) returns contents of fieldIter as a double
+
+handles         = guidata(hObject);
+
+handles.Iter = str2double(get(hObject,'String')); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function fieldIter_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fieldIter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function fieldPartNum_Callback(hObject, eventdata, handles)
+% hObject    handle to fieldPartNum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fieldPartNum as text
+%        str2double(get(hObject,'String')) returns contents of fieldPartNum as a double
+
+handles         = guidata(hObject);
+
+handles.PartNum = str2double(get(hObject,'String')); % Format [1,2,3,4], call handles.length(3)
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function fieldPartNum_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fieldPartNum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in startAveraging.
+function startAveraging_Callback(hObject, eventdata, handles)
+% hObject    handle to startAveraging (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles         = guidata(hObject);
+
+[Image_CC] = imageAlignment_CC(handles);
+
+AveragedIm = Image_CC{1,handles.Iter};
+ 
+ for k=2:size(Image_CC,1)
+     
+     AveragedIm = imadd(AveragedIm,Image_CC{k,handles.Iter});
+     
+ end
+ 
+axes(handles.axes2);cla reset;box on;
+imagesc(AveragedIm); 
+axis square
+colormap hot
+
+guidata(hObject, handles); % Update handles structure

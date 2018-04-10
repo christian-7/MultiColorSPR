@@ -1,24 +1,20 @@
-%% Rotate the image and compare it with the reference
+function [Image_CC] = imageAlignment_CC(handles);
 
-clear, clc, close all
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-folder      = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data/test_data_9_fold';
-data_name   = 'Particles_Ch1';
-mode        = 0;  % 0 = min; 1 = max;
-maxIter     = 5;  % number of iterations 
-maxPart     = 20; % number of particles/images
+folder      = handles.Path_Particle;
+name        = regexp(handles.Name_Particle, '_', 'split' );
+data_name   = [name{1} '_' name{2}];
+mode        = handles.fieldMode;  % 0 = min; 1 = max;
+maxIter     = handles.Iter;  % number of iterations 
+maxPart     = handles.PartNum; % number of particles/images
 usfac       = 10; % Upsampling factor (integer). Images will be registered to 
                   % within 1/usfac of a pixel. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Image_CC = {};
 
 % Load the first reference image, i.e. the sum of all input images
  
-cd(folder); ref_im = im2double(imread('reference_9Fold_Sim.tif')); cd ..
+cd(folder); ref_im = im2double(imread('reference_Im.tif')); cd ..
 
 emptyRef  = zeros(round(max(size(ref_im,1))*1.5),round(max(size(ref_im,1))*1.5));
 
@@ -144,66 +140,3 @@ disp(['Particle ID - ' num2str(j) '/' num2str(maxPart) ' Iteration - ' num2str(i
 end
 
 end
-
-%% Show the averaged images (optional)
-
-close all
-
-AveragedIm = Image_CC{1,maxIter};
- 
- for k=2:size(Image_CC,1)
-     
-     AveragedIm = imadd(AveragedIm,Image_CC{k,maxIter});
-     
- end
- 
-figure('Position',[700 100 300 300],'Name','result after final iteration'); imagesc(AveragedIm); 
-axis square
-colormap hot
-
-figure('Position',[100 100 600 600],'Name','result after each iteration'); 
-num_Images = ceil(sqrt(maxIter));
-for i = 1:maxIter;
-
-     AveragedIm = Image_CC{1,i};
- 
- for k=2:size(Image_CC,1)
-     
-     AveragedIm = imadd(AveragedIm,Image_CC{k,i});
-     
- end 
- 
-subplot(num_Images,num_Images,i);
-imagesc(AveragedIm);
-title(['Iteration ',num2str(i),' / ',num2str(maxIter),])
-  axis square
-  colormap hot  
-end
-    
-%% Save the final averaged image (optional)
-
-% 16-bit
-
-savename =['Averaged_Image_' num2str(maxPart) '_Part_' num2str(maxPart) '_Iter_' num2str(iteration)];
-imwrite(AveragedIm, [savename '.tiff']);
-
-% 32-bit
-
-I32     = [];
-I32     = uint32(AveragedIm);
-
-t = Tiff([savename '_32bit.tiff'],'w');
-
-tagstruct.ImageLength     = size(I32,1);
-tagstruct.ImageWidth      = size(I32,2);
-tagstruct.Photometric     = Tiff.Photometric.MinIsBlack;
-tagstruct.BitsPerSample   = 32;
-tagstruct.SamplesPerPixel = 1;
-tagstruct.RowsPerStrip    = 16;
-tagstruct.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
-tagstruct.Software        = 'MATLAB';
-t.setTag(tagstruct)
-
-t.write(I32);
-t.close()
-
