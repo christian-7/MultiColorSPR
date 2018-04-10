@@ -22,7 +22,11 @@ function varargout = manualClassifier_GUI(varargin)
 
 % Edit the above text to modify the response to help manualClassifier_GUI
 
+<<<<<<< HEAD
 % Last Modified by GUIDE v2.5 10-Apr-2018 09:13:34
+=======
+% Last Modified by GUIDE v2.5 05-Apr-2018 21:40:24
+>>>>>>> dee471f127b37152ca4796bd870e69bc53b0ccea
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -115,9 +119,15 @@ set(handles.text1, 'String', textLabel);
 
 handles.partID = 1;
 
+<<<<<<< HEAD
 axes(handles.axes1);cla reset;box on;
 scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
 scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'r.');
+=======
+axes(handles.axes1);cla reset;
+scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
+scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'k.');
+>>>>>>> dee471f127b37152ca4796bd870e69bc53b0ccea
 box on;
 
 textLabel = ['Particle ' num2str(handles.partID) ' of ' num2str(size(handles.Particles.toSave,1))];set(handles.text2, 'String', textLabel);
@@ -145,9 +155,15 @@ handles.partID = handles.partID+1;
 
 if handles.partID <= size(handles.Particles.toSave,1) == 1;
 
+<<<<<<< HEAD
 axes(handles.axes1);cla reset;box on;
 scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
 scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'r.');
+=======
+axes(handles.axes1);cla reset;
+scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
+scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'k.');
+>>>>>>> dee471f127b37152ca4796bd870e69bc53b0ccea
 
 textLabel = ['Particle ' num2str(handles.partID) ' of ' num2str(size(handles.Particles.toSave,1))];
 set(handles.text2, 'String', textLabel);
@@ -177,9 +193,15 @@ handles.partID = handles.partID+1;
 
 if handles.partID <= size(handles.Particles.toSave,1) == 1;
 
+<<<<<<< HEAD
 axes(handles.axes1);cla reset;box on;
 scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
 scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'r.');
+=======
+axes(handles.axes1);cla reset;
+scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
+scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'k.');
+>>>>>>> dee471f127b37152ca4796bd870e69bc53b0ccea
 
 textLabel = ['Particle ' num2str(handles.partID) ' of ' num2str(size(handles.Particles.toSave,1))];
 set(handles.text2, 'String', textLabel);
@@ -208,9 +230,15 @@ handles.partID = handles.partID+1;
 
 if handles.partID <= size(handles.Particles.toSave,1) == 1;
 
+<<<<<<< HEAD
 axes(handles.axes1);cla reset;box on;
 scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
 scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'r.');
+=======
+axes(handles.axes1);cla reset;
+scatter(handles.Particles.toSave{handles.partID,1}(:,1),handles.Particles.toSave{handles.partID,1}(:,2),'k.'); hold on;
+scatter(handles.Particles.toSave{handles.partID,2}(:,1),handles.Particles.toSave{handles.partID,2}(:,2),'k.');
+>>>>>>> dee471f127b37152ca4796bd870e69bc53b0ccea
 
 textLabel = ['Particle ' num2str(handles.partID) ' of ' num2str(size(handles.Particles.toSave,1))];
 set(handles.text2, 'String', textLabel);
@@ -226,6 +254,7 @@ function saveResult_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+<<<<<<< HEAD
 % Save Particles in Class 1 and 2
 
 ParticlesClass1 = {}; ParticlesClass2 = {};
@@ -300,5 +329,15 @@ test_data = table(Rg,Ecc,FRC,MeanH,StdH,MinH,MaxH,CircRatio,RectRatio,FA,Sym,Cir
 save([handles.Name_Ch1 '_training_Ch2.mat'],'test_data');
 
 fprintf('\n -- Tables saved -- \n');
+=======
+training          = cell2mat(handles.Particles.toSave(:,3:end));
+training(:,end+1) = handles.response;
+
+cd(handles.Path_Ch1); 
+filename1 = [handles.Name_Ch1 '_training.mat']; save(filename1,'training');
+
+% Add table
+
+>>>>>>> dee471f127b37152ca4796bd870e69bc53b0ccea
 
 

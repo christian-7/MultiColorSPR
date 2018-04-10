@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 04-Apr-2018 15:41:11
+% Last Modified by GUIDE v2.5 10-Apr-2018 11:59:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -248,10 +248,12 @@ function Untitled_15_Callback(hObject, eventdata, handles)
 
 
 % --------------------------------------------------------------------
-function Untitled_17_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_17 (see GCBO)
+function manualClass_Callback(hObject, eventdata, handles)
+% hObject    handle to manualClass (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+manualClassifier_GUI;
 
 
 % --------------------------------------------------------------------
