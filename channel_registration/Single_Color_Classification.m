@@ -19,7 +19,7 @@ line = {'Rg', 'Ecc', 'FRC', 'MeanH', 'StdH', 'MinH', 'MaxH', 'CircRatio','RectRa
 
 Rg          = cell2mat(CentForTraining(:,2));
 Ecc         = cell2mat(CentForTraining(:,3));
-FRC         = cell2mat(CentForTraining(:,));
+FRC         = cell2mat(CentForTraining(:,4));
 MeanH       = cell2mat(CentForTraining(:,5));
 StdH        = cell2mat(CentForTraining(:,6));
 MinH        = cell2mat(CentForTraining(:,7));
