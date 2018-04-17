@@ -110,53 +110,33 @@ classdef ScipionWorkflow < em.PackageInterface
             generateWorkflow(obj);
         end
         
-        function launchWorkflow(obj)
+        function launchWorkflow(obj, varargin)
             % LAUNCHWORKFLOW Launches the Scipion session.
-            assert(~isempty(obj.workflow), ...
-                ['Assertion failed: workflow file was not generated ' ...
-                 'from template.']);
+            %
+            % Parameters
+            % ----------
+            % scipionSource : str (optional)
+            %     A name/value pair that determines the Scipion source.
+            %     Current options are 'native' and 'docker'. The default is
+            %     'native'.
+            %
+            p = inputParser;
+            addParameter(p, 'scipionSource', 'native', @ischar);
+            parse(p, varargin{:});
             
-            % Creates the Scipion workflow .json file.
-            jsonFilename = strcat(tempname, '.json');
-            fid = fopen(jsonFilename, 'w');
-            fprintf(fid, '%s', obj.workflow);
-            fclose(fid);
-            
-            % Creates the Scipion project.
-            sp = obj.spartanEnv.scipionPath;
-            scipionScript = fullfile(sp, 'scipion');
-            projectScript = fullfile(sp, 'scripts', 'create_project.py');
-            cmd = strcat(scipionScript, {' run python '}, projectScript,...
-                         {' '}, obj.projectName, {' '}, jsonFilename, ...
-                         {' '}, obj.pathToProject);
-            cmd = cmd{1};
-            disp('Creating new Scipion project...')
-            [status, cmdout] = system(cmd);
-            disp(cmdout);
-            
-            if (status ~= 0)
-                error(['Scipion project creation failed with exit ' ...
-                       'code %d'], status);
-                   
-            end
-            
-            % Spawns the Scipion subprocess. We can assume a Linux system
-            % because Scipion does not work on Windows.
-            disp('Launching Scipion...');
-            cmd = strcat(scipionScript, {' project '}, obj.projectName, ...
-                         ' & echo $!');
-            cmd = cmd{1};
-            [status, cmdout] = system(cmd);
-            
-            if (status == 0)
-                obj.PID = str2double(cmdout);
-                disp(['Scipion process launched with PID: ' cmdout]);
-            else
-                error(['Scipion process spawning failed with exit ' ...
-                       'code %d'], status);
+            src = p.Results.scipionSource;
+            switch lower(src)
+                case {'native'}
+                    obj.launchNativeWorkflow();
+                case {'docker'}
+                    error('Error: Not implemented.')
+                otherwise
+                    error(['Error: argument' src ' not recognized. ' ... 
+                           'Must be either ''native'' or ''docker''']);
             end
         end
     end
+        
     
     methods (Access = private)
         function generateWorkflow(obj)
@@ -214,6 +194,53 @@ classdef ScipionWorkflow < em.PackageInterface
             end
             
             obj.workflow = template;
+        end
+        
+        function launchNativeWorkflow(obj)
+            % LAUNCHWORKFLOW Launches a native Scipion session.
+            assert(~isempty(obj.workflow), ...
+                ['Assertion failed: workflow file was not generated ' ...
+                 'from template.']);
+            
+            % Creates the Scipion workflow .json file.
+            jsonFilename = strcat(tempname, '.json');
+            fid = fopen(jsonFilename, 'w');
+            fprintf(fid, '%s', obj.workflow);
+            fclose(fid);
+            
+            % Creates the Scipion project.
+            sp = obj.spartanEnv.scipionPath;
+            scipionScript = fullfile(sp, 'scipion');
+            projectScript = fullfile(sp, 'scripts', 'create_project.py');
+            cmd = strcat(scipionScript, {' run python '}, projectScript,...
+                         {' '}, obj.projectName, {' '}, jsonFilename, ...
+                         {' '}, obj.pathToProject);
+            cmd = cmd{1};
+            disp('Creating new Scipion project...')
+            [status, cmdout] = system(cmd);
+            disp(cmdout);
+            
+            if (status ~= 0)
+                error(['Scipion project creation failed with exit ' ...
+                       'code %d'], status);
+                   
+            end
+            
+            % Spawns the Scipion subprocess. We can assume a Linux system
+            % because Scipion does not work on Windows.
+            disp('Launching Scipion...');
+            cmd = strcat(scipionScript, {' project '}, obj.projectName, ...
+                         ' & echo $!');
+            cmd = cmd{1};
+            [status, cmdout] = system(cmd);
+            
+            if (status == 0)
+                obj.PID = str2double(cmdout);
+                disp(['Scipion process launched with PID: ' cmdout]);
+            else
+                error(['Scipion process spawning failed with exit ' ...
+                       'code %d'], status);
+            end
         end
     end
 end

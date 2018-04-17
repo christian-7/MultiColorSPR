@@ -4,8 +4,11 @@
 % Author: Kyle M. Douglass
 %
 
-classdef ScipionWorkflowTest < matlab.unittest.TestCase
+classdef ScipionNativeWorkflowTest < matlab.unittest.TestCase
     %SCIPIONWORKFLOWTEST Unit tests for the ScipionWorkflow class.
+    % 
+    % These unit tests are for native Scipion installations only.
+    %
     % To run this test, execute the command
     % 
     %   result = runtests('ScipionWorkflowTest.m');
@@ -108,10 +111,10 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
     
     methods (Test)
         function launchPairedWorkflowTest(testCase)
-            % LAUNCHPAIREDWORKFLOWTEST Unit test for Scipion.
+            % LAUNCHPAIREDWORKFLOWTEST Unit test for native Scipion.
             % This unit test verifies that a new Scipion project may be
             % launched with a premade workflow for doing paired protein
-            % analyses.
+            % analyses. It launches a native Scipion installation.
             import em.ScipionWorkflow;
             pairedAnalysis = true;
             swf = ScipionWorkflow(testCase.PROJECTNAME, pairedAnalysis, ...
@@ -124,7 +127,7 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
             % Kill Scipion
             assert(~isempty(swf.PID), 'Error: Scipion PID not assigned.');
             
-            [status, cmdout] = system(['kill ' num2str(swf.PID)]);
+            [status, ~] = system(['kill ' num2str(swf.PID)]);
             
             assert(status == 0);
         end
