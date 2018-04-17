@@ -44,6 +44,49 @@ classdef ScipionWorkflow < em.PackageInterface
         CONTAINER_INPUT_PATH='/home/scipion/inputs';
     end
     
+    methods (Static)
+        function launchDockerManager()
+            %LAUNCHDOCKERMANAGER Launches the Scipion manager in Docker.
+            %
+            % Launches the Scipion manager through Docker.
+            disp('Launching the Scipion Manager...')
+            cmd = ['docker run -it --rm -d' ...
+                   '    --name Scipion ' ...
+                   '    --mount source=ScipionUserData,target=/home/scipion/ScipionUserData ' ...
+                   '    --mount source=ScipionInputData,target=/home/scipion/inputs ' ...
+                   '    -e DISPLAY=$DISPLAY ' ...
+                   '    -v /tmp/.X11-unix:/tmp/.X11-unix ' ...
+                   '    epflbiophys/scipion:1.2'];
+               
+            [status, cmdout] = system(cmd);
+            if (status == 0)
+                disp(['Scipion process launched in Docker container: ' cmdout]);
+            end
+        end
+        
+        function launchNativeManager()
+            %LAUNCHNATIVEMANAGER Launches the Scipion manager natively.
+            %
+            % Launches the Scipion manager through Docker.
+            disp('Launching the Scipion Manager...')
+            env = utils.SpartanEnv.getEnvironment();
+            scipionScript = fullfile(env.scipionPath, 'scipion');
+            
+            % Spawns the Scipion subprocess. We can assume a Linux system
+            % because Scipion does not work on Windows.
+            disp('Launching Scipion...');
+            cmd = [scipionScript ' manager & echo $!'];              
+            [status, cmdout] = system(cmd);
+            
+            if (status == 0)
+                disp(['Scipion process launched with PID: ' cmdout]);
+            else
+                error(['Scipion process spawning failed with exit ' ...
+                       'code %d'], status);
+            end
+        end
+    end
+    
     methods
         function obj = ScipionWorkflow( ...
             projectName, pairedAnalysis, pathToRefMontage, varargin ...
@@ -136,10 +179,21 @@ classdef ScipionWorkflow < em.PackageInterface
             end
         end
         
-        %TODO Add a launchManager function to launch the Scipion manager.
+        function launchManager(obj)
+            % LAUNCHMANAGER Launches the Scipion manager window.
+            %
+            src = obj.scipionSource;
+            switch lower(src)
+                case {'native'}
+                    obj.launchNativeManager();
+                case {'docker'}
+                    obj.launchDockerManager();
+                otherwise
+                    error('Error: Unable to launch Scipion''s manager.');
+            end
+        end
         
     end
-        
     
     methods (Access = private)
         function generateWorkflow(obj)

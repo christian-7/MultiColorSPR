@@ -5,7 +5,7 @@
 %
 
 classdef ScipionDockerWorkflowTest < matlab.unittest.TestCase
-    %SCIPIONWORKFLOWTEST Unit tests for the ScipionWorkflow class.
+    %SCIPIONDOCKERWORKFLOWTEST Unit tests for the ScipionWorkflow class.
     % 
     % These unit tests are for native Scipion installations only.
     %
