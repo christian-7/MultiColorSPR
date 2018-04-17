@@ -28,6 +28,9 @@ classdef ScipionWorkflow < em.PackageInterface
         
         % The full path to the folder for this Scipion project.
         pathToProject;
+        
+        % Will Scipion be run natively or in Docker?
+        scipionSource;
     end
     
     properties (Constant, GetAccess = private)
@@ -38,6 +41,7 @@ classdef ScipionWorkflow < em.PackageInterface
         PATH_PATTERN = '_PATH';
         PATTERN_PATTERN = '_PATTERN';
         DOCKER_INPUT_VOLUME='ScipionInputData';
+        CONTAINER_INPUT_PATH='/home/scipion/inputs';
     end
     
     methods
@@ -65,6 +69,10 @@ classdef ScipionWorkflow < em.PackageInterface
             %     if pairedAnalysis is set to true.
             % poiLabel : str (optional)
             %     The text label for the protein of interest.
+            % scipionSource : str (optional)
+            %     A name/value pair that determines the Scipion source.
+            %     Current options are 'native' and 'docker'. The default is
+            %     'native'.
             %
             % Parameters
             % ----------
@@ -86,6 +94,7 @@ classdef ScipionWorkflow < em.PackageInterface
             addOptional(p, 'pathToPoiMontage', '', @ischar);
             addOptional(p, 'poiLabel', defaultPoiLabel, @ischar);
             addParameter(p, 'pathToProject', '', @ischar);
+            addParameter(p, 'scipionSource', 'native', @ischar);
             
             parse(p, projectName, pairedAnalysis, pathToRefMontage, ...
                   varargin{:});
@@ -95,6 +104,7 @@ classdef ScipionWorkflow < em.PackageInterface
             obj.pathToRefMontage = p.Results.pathToRefMontage;
             obj.refLabel = p.Results.refLabel;
             obj.poiLabel = p.Results.poiLabel;
+            obj.scipionSource = p.Results.scipionSource;
             
             % TODO: ADD CODE FOR SINGLE POI ANALYSIS
             
@@ -111,21 +121,10 @@ classdef ScipionWorkflow < em.PackageInterface
             generateWorkflow(obj);
         end
         
-        function launchWorkflow(obj, varargin)
+        function launchWorkflow(obj)
             % LAUNCHWORKFLOW Launches the Scipion session.
-            %
-            % Parameters
-            % ----------
-            % scipionSource : str (optional)
-            %     A name/value pair that determines the Scipion source.
-            %     Current options are 'native' and 'docker'. The default is
-            %     'native'.
-            %
-            p = inputParser;
-            addParameter(p, 'scipionSource', 'native', @ischar);
-            parse(p, varargin{:});
-            
-            src = p.Results.scipionSource;
+            %          
+            src = obj.scipionSource;
             switch lower(src)
                 case {'native'}
                     obj.launchNativeWorkflow();
@@ -136,6 +135,9 @@ classdef ScipionWorkflow < em.PackageInterface
                            'Must be either ''native'' or ''docker''']);
             end
         end
+        
+        %TODO Add a launchManager function to launch the Scipion manager.
+        
     end
         
     
@@ -154,6 +156,13 @@ classdef ScipionWorkflow < em.PackageInterface
                 [filepath, name, ext] = fileparts(obj.pathToPoiMontage);
                 pairPath = filepath;
                 pairPattern = strcat(name, ext);
+            end
+            
+            % Change the path to the Docker container file system if using
+            % the Scipion Docker container.
+            if strcmp('docker', obj.scipionSource)
+                refPath = obj.CONTAINER_INPUT_PATH;
+                pairPath = obj.CONTAINER_INPUT_PATH;
             end
             
             % Search the workflow for the pattern strings and replace them
@@ -208,26 +217,54 @@ classdef ScipionWorkflow < em.PackageInterface
             fid = fopen(jsonFilename, 'w');
             fprintf(fid, '%s', obj.workflow);
             fclose(fid);
-            
-            % Loads the data into the Scipion input Docker volume.
-            cmd = strcat({'docker container create --name dummy -v '}, ...
-                         obj.DOCKER_INPUT_VOLUME, {':/home/scipion/inputs hello-world'});
-            cmd = cmd{1};
-            disp('Creating dummy data container...');
-            [status, cmdout] = system(cmd);
-            disp(status); disp(cmdout);
-            
-            disp('Loading data into Docker volume...');
-            cmd = strcat({'docker cp '}, jsonFilename, {' dummy:/home/scipion/inputs'});
-            cmd = cmd{1};
-            [status, cmdout] = system(cmd);
-            disp(status); disp(cmdout);
-            
-            % TODO Make this a FINALLY statement
-            cmd = 'docker container rm dummy';
-            disp('Removing dummy container...');
-            [status, cmdout] = system(cmd);
-            disp(status); disp(cmdout);
+
+            try
+                % Clean the input volume
+                cmd = strcat({'docker volume rm '}, obj.DOCKER_INPUT_VOLUME);
+                cmd = cmd{1};
+                system(cmd);
+                
+                % Creates the dummy container.
+                cmd = strcat({'docker container create --name dummy -v '}, ...
+                             obj.DOCKER_INPUT_VOLUME, {':/home/scipion/inputs hello-world'});
+                cmd = cmd{1};
+                disp('Creating dummy data container...');
+                [status, ~] = system(cmd);
+                assert(status == 0, ...
+                       'Error: Failed to create the dummy container.')
+                
+                % Copies the data into the Scipion input Docker volume.
+                disp('Copying data into Docker volume...');
+                cmd = strcat({'docker cp '}, jsonFilename, {' dummy:/home/scipion/inputs'});
+                cmd = cmd{1};
+                [status, ~] = system(cmd);
+                assert(status == 0, ...
+                       'Error: Failed to copy .json workflow into the volume.')
+                   
+                cmd = strcat({'docker cp '}, obj.pathToRefMontage, {' dummy:/home/scipion/inputs'});
+                cmd = cmd{1};
+                [status, ~] = system(cmd);
+                assert(status == 0, ...
+                       'Error: Failed to copy reference montage into the volume.')
+                
+                cmd = strcat({'docker cp '}, obj.pathToPoiMontage, {' dummy:/home/scipion/inputs'});
+                cmd = cmd{1};
+                [status, ~] = system(cmd);
+                assert(status == 0, ...
+                       'Error: Failed to copy protein of interest montage into the volume.')   
+                   
+                % Remove the dummy container.
+                cmd = 'docker container rm dummy';
+                disp('Removing dummy container...');
+                system(cmd);
+            catch ME
+                % Remove the dummy container.
+                cmd = 'docker container rm dummy';
+                disp('Removing dummy container...');
+                system(cmd);
+                
+                rethrow(ME);
+            end
             
             % Get just the json filename.
             [~, name, ext] = fileparts(jsonFilename);
@@ -238,21 +275,19 @@ classdef ScipionWorkflow < em.PackageInterface
                            '    --name Scipion ' ...
                            '    --mount source=ScipionUserData,target=/home/scipion/ScipionUserData ' ...
                            '    --mount source=ScipionInputData,target=/home/scipion/inputs ' ...
-                           '    -e DISPLAY=$DISPLAY ' ...
-                           '    -v /tmp/.X11-unix:/tmp/.X11-unix ' ...
                            '    epflbiophys/scipion:1.2 ' ...
                            '    ./scipion run python scripts/create_project.py']}, ...
                          {' '}, obj.projectName, {' '}, jsonDockerFilename, ...
                          {' '}, obj.pathToProject);
             cmd = cmd{1};
-               
             [status, cmdout] = system(cmd);
-            disp(status);
-            disp(cmdout)
-            
+            if (status ~= 0); disp(cmdout); end
+            assert(status == 0, ...
+                   'Error: Failed to create a new Scipion project.');
+                        
             % Launch Scipion
             disp('Launching Scipion...')
-            cmd = ['docker run -it --rm ' ...
+            cmd = ['docker run -it --rm -d' ...
                    '    --name Scipion ' ...
                    '    --mount source=ScipionUserData,target=/home/scipion/ScipionUserData ' ...
                    '    --mount source=ScipionInputData,target=/home/scipion/inputs ' ...
@@ -261,8 +296,10 @@ classdef ScipionWorkflow < em.PackageInterface
                    '    epflbiophys/scipion:1.2'];
                
             [status, cmdout] = system(cmd);
-            disp(status);
-            disp(cmdout)
+            if (status == 0)
+                obj.PID = cmdout;
+                disp(['Scipion process launched in Docker container: ' cmdout]);
+            end
 
         end
         
