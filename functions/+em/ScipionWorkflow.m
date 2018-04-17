@@ -37,6 +37,7 @@ classdef ScipionWorkflow < em.PackageInterface
         LABEL_PATTERN = '_LABEL';
         PATH_PATTERN = '_PATH';
         PATTERN_PATTERN = '_PATTERN';
+        DOCKER_INPUT_VOLUME='ScipionInputData';
     end
     
     methods
@@ -129,7 +130,7 @@ classdef ScipionWorkflow < em.PackageInterface
                 case {'native'}
                     obj.launchNativeWorkflow();
                 case {'docker'}
-                    error('Error: Not implemented.')
+                    obj.launchDockerWorkflow();
                 otherwise
                     error(['Error: argument' src ' not recognized. ' ... 
                            'Must be either ''native'' or ''docker''']);
@@ -196,8 +197,77 @@ classdef ScipionWorkflow < em.PackageInterface
             obj.workflow = template;
         end
         
+        function launchDockerWorkflow(obj)
+            % LAUNCHDOCKERWORKFLOW Launches a Docker-based Scipion session.
+            assert(~isempty(obj.workflow), ...
+                ['Assertion failed: workflow file was not generated ' ...
+                 'from template.']);
+            
+            % Creates the Scipion workflow .json file.
+            jsonFilename = strcat(tempname, '.json');
+            fid = fopen(jsonFilename, 'w');
+            fprintf(fid, '%s', obj.workflow);
+            fclose(fid);
+            
+            % Loads the data into the Scipion input Docker volume.
+            cmd = strcat({'docker container create --name dummy -v '}, ...
+                         obj.DOCKER_INPUT_VOLUME, {':/home/scipion/inputs hello-world'});
+            cmd = cmd{1};
+            disp('Creating dummy data container...');
+            [status, cmdout] = system(cmd);
+            disp(status); disp(cmdout);
+            
+            disp('Loading data into Docker volume...');
+            cmd = strcat({'docker cp '}, jsonFilename, {' dummy:/home/scipion/inputs'});
+            cmd = cmd{1};
+            [status, cmdout] = system(cmd);
+            disp(status); disp(cmdout);
+            
+            % TODO Make this a FINALLY statement
+            cmd = 'docker container rm dummy';
+            disp('Removing dummy container...');
+            [status, cmdout] = system(cmd);
+            disp(status); disp(cmdout);
+            
+            % Get just the json filename.
+            [~, name, ext] = fileparts(jsonFilename);
+            jsonDockerFilename = strcat('/home/scipion/inputs/', name, ext);
+            
+            disp('Creating the Scipion project...');
+            cmd = strcat({['docker run -it --rm ' ...
+                           '    --name Scipion ' ...
+                           '    --mount source=ScipionUserData,target=/home/scipion/ScipionUserData ' ...
+                           '    --mount source=ScipionInputData,target=/home/scipion/inputs ' ...
+                           '    -e DISPLAY=$DISPLAY ' ...
+                           '    -v /tmp/.X11-unix:/tmp/.X11-unix ' ...
+                           '    epflbiophys/scipion:1.2 ' ...
+                           '    ./scipion run python scripts/create_project.py']}, ...
+                         {' '}, obj.projectName, {' '}, jsonDockerFilename, ...
+                         {' '}, obj.pathToProject);
+            cmd = cmd{1};
+               
+            [status, cmdout] = system(cmd);
+            disp(status);
+            disp(cmdout)
+            
+            % Launch Scipion
+            disp('Launching Scipion...')
+            cmd = ['docker run -it --rm ' ...
+                   '    --name Scipion ' ...
+                   '    --mount source=ScipionUserData,target=/home/scipion/ScipionUserData ' ...
+                   '    --mount source=ScipionInputData,target=/home/scipion/inputs ' ...
+                   '    -e DISPLAY=$DISPLAY ' ...
+                   '    -v /tmp/.X11-unix:/tmp/.X11-unix ' ...
+                   '    epflbiophys/scipion:1.2'];
+               
+            [status, cmdout] = system(cmd);
+            disp(status);
+            disp(cmdout)
+
+        end
+        
         function launchNativeWorkflow(obj)
-            % LAUNCHWORKFLOW Launches a native Scipion session.
+            % LAUNCHNATIVEWORKFLOW Launches a native Scipion session.
             assert(~isempty(obj.workflow), ...
                 ['Assertion failed: workflow file was not generated ' ...
                  'from template.']);
