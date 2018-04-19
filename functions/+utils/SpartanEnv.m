@@ -28,6 +28,7 @@ classdef (Sealed) SpartanEnv < handle
     properties (SetAccess = public, GetAccess = public)
         spartanPath = '';
         scipionPath = '';
+        scipionUserDataPath = '';
         chimeraPath = '';
         chimeraScriptsDir = '';
         scipionPairedTemplate = '';

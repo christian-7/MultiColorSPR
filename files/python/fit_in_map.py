@@ -70,7 +70,5 @@ def fit_map_in_map(map1_path, map2_path,
     print tfs
     
 if __name__ == '__main__':
-    #f1 = '/home/laboleb/ScipionUserData/projects/2017-12-01_Cep152_Cep164/Runs/000557_XmippProtProjMatch/extra/iter_004/reconstruction_filtered_Ref3D_001.vol'
-    #f2 = '/home/laboleb/ScipionUserData/projects/2017-12-01_Cep152_Cep164/Runs/000713_EmanProtReconstruct/extra/volume.hdf'
     fit_map_in_map(args.map1, args.map2)
 

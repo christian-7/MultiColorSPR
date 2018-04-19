@@ -85,6 +85,38 @@ classdef ScipionWorkflow < em.PackageInterface
                        'code %d'], status);
             end
         end
+        
+        function filename = getVolumeNative(projectName, proteinType, id)
+            % GETVOLUMENATIVE Gets the reference protein volume file.
+            %
+            % Inputs
+            % ------
+            % project name : str
+            %     The name of the project containing the data.
+            % protein_type : str
+            %     Are we extracting the reference protein 'ref' or the
+            %     protein of interest 'poi'?
+            % id : int
+            %     The Scipion run ID that generated the volume data.
+            %
+            env = utils.SpartanEnv.getEnvironment();
+            root = fullfile(env.scipionUserDataPath, 'projects', ...
+                            projectName, 'Runs');
+            if strcmp(proteinType, 'ref')
+                token = fullfile('_XmippProtProjMatch', 'extra', ...
+                                 'iter_004', ...
+                                 'reconstruction_filtered_Ref3D_001.vol');
+            elseif strcmp(proteinType, 'poi')
+                token = fullfile('_EmanProtReconstruct', 'extra', ...
+                                 'volume.hdf');
+            else
+                error(['Error: proteinType must be either ''ref'' or '...
+                      '''poi'' but got ' proteinType ' instead.']);
+            end
+            
+            filename = strcat(sprintf('%06d', id), token);
+            filename = fullfile(root, filename);                   
+        end
     end
     
     methods
@@ -192,7 +224,6 @@ classdef ScipionWorkflow < em.PackageInterface
                     error('Error: Unable to launch Scipion''s manager.');
             end
         end
-        
     end
     
     methods (Access = private)
@@ -403,6 +434,7 @@ classdef ScipionWorkflow < em.PackageInterface
                        'code %d'], status);
             end
         end
+        
     end
 end
 
