@@ -126,8 +126,8 @@ classdef ScipionNativeWorkflowTest < matlab.unittest.TestCase
             assert(status == 0);
         end
         
-        function getVolumeNativeRefTest(testCase)
-            % GETVOLUMENATIVE Unit test for getting volume data file names.
+        function getVolumeRefTest(testCase)
+            % GETVOLUMEREF Unit test for getting volume data file names.
             %
             import utils.SpartanEnv;
             env = utils.SpartanEnv.getEnvironment();
@@ -137,7 +137,7 @@ classdef ScipionNativeWorkflowTest < matlab.unittest.TestCase
                                  '000775_XmippProtProjMatch', 'extra', ...
                                  'iter_004', ...
                                  'reconstruction_filtered_Ref3D_001.vol');
-            result = em.ScipionWorkflow.getVolumeNative(...
+            result = em.ScipionWorkflow.getVolume(...
                          testCase.PROJECTNAME, 'ref', 775);
             
             assert(strcmp(expResult, result), ...
@@ -145,8 +145,8 @@ classdef ScipionNativeWorkflowTest < matlab.unittest.TestCase
                                                    
         end
         
-         function getVolumeNativePoiTest(testCase)
-            % GETVOLUMENATIVE Unit test for getting volume data file names.
+         function getVolumePoiTest(testCase)
+            % GETVOLUMEPOITEST Unit test for getting volume data file names.
             %
             import utils.SpartanEnv;
             env = utils.SpartanEnv.getEnvironment();
@@ -155,7 +155,7 @@ classdef ScipionNativeWorkflowTest < matlab.unittest.TestCase
                                  testCase.PROJECTNAME, 'Runs', ...
                                  '007639_EmanProtReconstruct', 'extra', ...
                                  'volume.hdf');
-            result = em.ScipionWorkflow.getVolumeNative(...
+            result = em.ScipionWorkflow.getVolume(...
                          testCase.PROJECTNAME, 'poi', 7639);
             
             assert(strcmp(expResult, result), ...
