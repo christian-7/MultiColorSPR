@@ -1,0 +1,13 @@
+#!/bin/bash
+# Copyright (C) 2018 Laboratory of Experimental Biophysics
+# Ecole Polytechnique Federale de Lausanne
+#
+# Builds the Scipion container from its Dockerfile.
+#
+# Usage: build
+#
+# Kyle M. Douglass, 2018
+#
+
+# Builds the Scipion build container.
+docker build -t epflbiophys/scipion:1.2 .
