@@ -84,8 +84,5 @@ def transform(model_path, fixed_model_path, ea = (0.0, 0.0, 0.0),
 
 
 if __name__ == '__main__':
-    #model_path = '/home/laboleb/ScipionUserData/projects/2017-12-01_Cep152_Cep164/Runs/000557_XmippProtProjMatch/extra/iter_001/reconstruction_split_1_Ref3D_001.vol'
-    #fixed_model_path = '/home/laboleb/ScipionUserData/projects/2017-12-01_Cep152_Cep164/Runs/000713_EmanProtReconstruct/extra/volume.hdf'
-    #transform(model_path, fixed_model_path, t=(5, 5, 5))
     transform(args.model_path, args.fixed_model_path,
               t=(args.x, args.y, args.z))

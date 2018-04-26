@@ -8,7 +8,7 @@ classdef ChimeraWorkflow < em.PackageInterface
     % CHIMERAWORKFLOW Launches a pre-specified Chimera workflow.
     %
     methods (Static)
-        function fitInMap(map1Path, map2Path, varargin)
+        function pid = fitInMap(map1Path, map2Path, varargin)
             % FITINMAP Fits one density map into another.
             %
             % Inputs
@@ -38,17 +38,17 @@ classdef ChimeraWorkflow < em.PackageInterface
             
             % Launch Chimera.
             [status, cmdout] = system(cmd);
-            disp(cmdout);
+            pid = str2double(cmdout);
             
             if (status == 0)
-                disp(['Chimera process launched with PID: ' cmdout]);
+                disp(['Chimera process launched with PID: ' num2str(pid)]);
             else
                 error(['Chimera process spawning failed with exit ' ...
                        'code %d'], status);
             end
         end
         
-        function transformCoordinates(mapPath, mapPathFixed, x, y, z)
+        function pid = transformCoordinates(mapPath, mapPathFixed, x, y, z)
             % TRANSFORMCOORDINATES Translates a map relative to another.
             %
             % transformCoordinates(...) translates the model in mapPath
@@ -96,10 +96,10 @@ classdef ChimeraWorkflow < em.PackageInterface
             disp(cmd)
             % Launch Chimera.
             [status, cmdout] = system(cmd);
-            disp(cmdout);
+            pid = str2double(cmdout);
             
             if (status == 0)
-                disp(['Chimera process launched with PID: ' cmdout]);
+                disp(['Chimera process launched with PID: ' num2str(pid)]);
             else
                 error(['Chimera process spawning failed with exit ' ...
                        'code %d'], status);
