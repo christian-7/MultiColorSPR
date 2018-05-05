@@ -7,7 +7,7 @@ clear, clc, close all
 folder      = '/Users/christian/Documents/Arbeit/MatLab/image_registration/test_data_9_fold';
 data_name   = 'Particles_Ch1';
 mode        = 1;  % 0 = min; 1 = max;
-maxIter     = 6;  % number of iterations 
+maxIter     = 10;  % number of iterations 
 maxPart     = 10; % number of particles/images
 usfac       = 10; % Upsampling factor (integer). Images will be registered to 
                   % within 1/usfac of a pixel. 
@@ -20,28 +20,31 @@ Image_CC = {};
  
 cd(folder); ref_im = im2double(imread('reference_9Fold_Sim.tif')); cd ..
 
-emptyRef  = zeros(round(max(size(ref_im,1))*1.5),round(max(size(ref_im,1))*1.5));
+% emptyRef  = zeros(round(max(size(ref_im,1))*1.5),round(max(size(ref_im,1))*1.5));
 
 for iteration = 1:maxIter; % For all iterations
     
     if iteration == 1;
+    
+       newRef = ref_im;
 
-size_DC = size(emptyRef); center = round(size_DC(2)/2);
-emptyRef(round(center-size(ref_im,1)/2):(round(center-size(ref_im,1)/2))+size(ref_im,1)-1,... 
-         round(center-size(ref_im,1)/2):(round(center-size(ref_im,1)/2))+size(ref_im,1)-1) = ref_im;
+% size_DC = size(emptyRef); center = round(size_DC(2)/2);
+% emptyRef(round(center-size(ref_im,1)/2):(round(center-size(ref_im,1)/2))+size(ref_im,1)-1,... 
+%          round(center-size(ref_im,1)/2):(round(center-size(ref_im,1)/2))+size(ref_im,1)-1) = ref_im;
      
     else
         
- newRef = Image_CC{1,iteration-1};
+    newRef = Image_CC{1,iteration-1};
  
  for k=2:size(Image_CC,1)
      newRef = imadd(newRef,Image_CC{k,iteration-1});
+     newRef = newRef/size(Image_CC,1);
  end
         
-emptyRef  = zeros(round(max(size(ref_im,1))*1.5),round(max(size(ref_im,1))*1.5));
-size_DC   = size(emptyRef); center = round(size_DC(2)/2);
-emptyRef(round(center-size(newRef,1)/2):(round(center-size(newRef,1)/2))+size(newRef,1)-1,... 
-         round(center-size(newRef,1)/2):(round(center-size(newRef,1)/2))+size(newRef,1)-1) = newRef;
+% emptyRef  = zeros(round(max(size(ref_im,1))*1.5),round(max(size(ref_im,1))*1.5));
+% size_DC   = size(emptyRef); center = round(size_DC(2)/2);
+% emptyRef(round(center-size(newRef,1)/2):(round(center-size(newRef,1)/2))+size(newRef,1)-1,... 
+%          round(center-size(newRef,1)/2):(round(center-size(newRef,1)/2))+size(newRef,1)-1) = newRef;
 
     end 
         
@@ -68,7 +71,7 @@ else
 
 end
     
-empty2    = zeros(round(max(size(Im2,1))*1.5),round(max(size(Im2,1))*1.5));
+% empty2    = zeros(round(max(size(Im2,1))*1.5),round(max(size(Im2,1))*1.5));
 
 rot_reg = [];
 rot_reg = zeros(360,5);
@@ -78,15 +81,15 @@ rot_reg(:,1) = 1:1:360;
 
 for i=1:length(rot_reg);
     
-Im2_rot = imrotate(Im2, rot_reg(i,1));
-
-empty3 = empty2;
-size_empty3 = size(empty3); center = round(size_empty3(2)/2);
-empty3(round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1,round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1) = Im2_rot;
+Im2_rot = imrotate(Im2, rot_reg(i,1),'crop');
+% 
+% empty3 = empty2;
+% size_empty3 = size(empty3); center = round(size_empty3(2)/2);
+% empty3(round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1,round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1) = Im2_rot;
 
 try
     
-[output, Greg] = dftregistration(fft2(emptyRef),fft2(empty3),usfac);
+[output, Greg] = dftregistration(fft2(newRef),fft2(Im2_rot),usfac);
 
 catch
     rot_reg(i,2:5) = 0;
@@ -112,31 +115,31 @@ else end
 
 % Apply the corresponding rotation (Step 1)
 
-Im2_rot = imrotate(Im2, rot_reg(target,1));
+Im2_rot = imrotate(Im2, rot_reg(target,1),'crop');
 
 % Find and apply translation (Step 2)
 
 % Put the rotated image in a black space
 
-empty3 = empty2;
-size_empty3 = size(empty3); center = round(size_empty3(2)/2);
-empty3(round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1,round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1) = Im2_rot;
+% empty3 = empty2;
+% size_empty3 = size(empty3); center = round(size_empty3(2)/2);
+% empty3(round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1,round(center-size(Im2_rot,1)/2):(round(center-size(Im2_rot,1)/2))+size(Im2_rot,1)-1) = Im2_rot;
     
-[output, Greg] = dftregistration(fft2(emptyRef),fft2(empty3),usfac);
-
-empty3 = abs(ifft2(Greg));
+% [output, Greg] = dftregistration(fft2(newRef),fft2(Im2_rot),usfac);
+% 
+% empty3 = abs(ifft2(Greg));
 
 % Crop around the center to prevent size increase
 
-[p3, p4] = size(empty3);
-q1       = 78;                  % size of the crop box
-i3_start = floor((p3-q1)/2);    % or round instead of floor; using neither gives warning
-i3_stop  = i3_start + q1;
+% [p3, p4] = size(empty3);
+% q1       = 78;                  % size of the crop box
+% i3_start = floor((p3-q1)/2);    % or round instead of floor; using neither gives warning
+% i3_stop  = i3_start + q1;
+% 
+% Im2_crop = empty3(i3_start:i3_stop, i3_start:i3_stop, :);
+% empty3   = Im2_crop;
 
-Im2_crop = empty3(i3_start:i3_stop, i3_start:i3_stop, :);
-empty3   = Im2_crop;
-
-Image_CC{j,iteration} = empty3;
+Image_CC{j,iteration} = Im2_rot;
 
 clc;
 disp(['Particle ID - ' num2str(j) '/' num2str(maxPart) ' Iteration - ' num2str(iteration) '/' num2str(maxIter)]);
