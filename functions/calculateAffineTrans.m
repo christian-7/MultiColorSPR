@@ -96,6 +96,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% Calculate the transformation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 T_lwm = fitgeotrans(fixed,moving,'lwm',10);
+% T_lwm = fitgeotrans(fixed,moving,'affine');
 
 % T_lwm_old = cp2tform(fixed,moving,'lwm',10);
 

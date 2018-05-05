@@ -376,7 +376,7 @@ function affTrans_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
-[handles.T_lwm, handles.TRE, corrected_moving, fixed, moving] = calculateAffineTrans(106,2,handles.cntCh1F,handles.cntCh2F);
+[handles.T_lwm, handles.TRE, corrected_moving, fixed, moving] = calculateAffineTrans(106,1,handles.cntCh1F,handles.cntCh2F);
 
 axes(handles.transOutput)
 cla reset;
