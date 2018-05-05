@@ -4,11 +4,14 @@
 % Author: Kyle M. Douglass
 %
 
-classdef ScipionWorkflowTest < matlab.unittest.TestCase
-    %SCIPIONWORKFLOWTEST Unit tests for the ScipionWorkflow class.
+classdef ScipionNativeWorkflowTest < matlab.unittest.TestCase
+    %SCIPIONNATIVEWORKFLOWTEST Unit tests for the ScipionWorkflow class.
+    % 
+    % These unit tests are for native Scipion installations only.
+    %
     % To run this test, execute the command
     % 
-    %   result = runtests('ScipionWorkflowTest.m');
+    %   result = runtests('ScipionNativeWorkflowTest.m');
     %
     % This must be executed after a basic Spartan environment has been
     % setup with Scipion environment variables.
@@ -43,18 +46,11 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
     methods (TestMethodTeardown)
         function tearDown(testCase)
             %TEARDOWN Cleans up the test environment.
-            
-            % Find the Scipion user data path
+            %
             import utils.SpartanEnv;
             env = utils.SpartanEnv.getEnvironment();
             
-            if isempty(env.scipionPath)
-                error('ScipionWorkflowTest:emptyScipionPath',...
-                      ['Error. \nThe path to the Scipion folder is ' ...
-                       'empty. Please add it to the Spartan '...
-                       'environment variables.']);
-            end
-            
+            % Find the Scipion user data path
             scipionScript = fullfile(env.scipionPath,'scipion');
             cmd = strcat(scipionScript, ' printenv');
             [status, cmdout] = system(cmd);
@@ -108,10 +104,11 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
     
     methods (Test)
         function launchPairedWorkflowTest(testCase)
-            % LAUNCHPAIREDWORKFLOWTEST Unit test for Scipion.
+            % LAUNCHPAIREDWORKFLOWTEST Unit test for native Scipion.
+            %
             % This unit test verifies that a new Scipion project may be
             % launched with a premade workflow for doing paired protein
-            % analyses.
+            % analyses. It launches a native Scipion installation.
             import em.ScipionWorkflow;
             pairedAnalysis = true;
             swf = ScipionWorkflow(testCase.PROJECTNAME, pairedAnalysis, ...
@@ -124,9 +121,45 @@ classdef ScipionWorkflowTest < matlab.unittest.TestCase
             % Kill Scipion
             assert(~isempty(swf.PID), 'Error: Scipion PID not assigned.');
             
-            [status, cmdout] = system(['kill ' num2str(swf.PID)]);
+            [status, ~] = system(['kill ' num2str(swf.PID)]);
             
             assert(status == 0);
+        end
+        
+        function getVolumeRefTest(testCase)
+            % GETVOLUMEREF Unit test for getting volume data file names.
+            %
+            import utils.SpartanEnv;
+            env = utils.SpartanEnv.getEnvironment();
+            
+            expResult = fullfile(env.scipionUserDataPath, 'projects', ...
+                                 testCase.PROJECTNAME, 'Runs', ...
+                                 '000775_XmippProtProjMatch', 'extra', ...
+                                 'iter_004', ...
+                                 'reconstruction_filtered_Ref3D_001.vol');
+            result = em.ScipionWorkflow.getVolume(...
+                         testCase.PROJECTNAME, 'ref', 775);
+            
+            assert(strcmp(expResult, result), ...
+                   'Error: filename does not match expected result.');
+                                                   
+        end
+        
+         function getVolumePoiTest(testCase)
+            % GETVOLUMEPOITEST Unit test for getting volume data file names.
+            %
+            import utils.SpartanEnv;
+            env = utils.SpartanEnv.getEnvironment();
+            
+            expResult = fullfile(env.scipionUserDataPath, 'projects', ...
+                                 testCase.PROJECTNAME, 'Runs', ...
+                                 '007639_EmanProtReconstruct', 'extra', ...
+                                 'volume.hdf');
+            result = em.ScipionWorkflow.getVolume(...
+                         testCase.PROJECTNAME, 'poi', 7639);
+            
+            assert(strcmp(expResult, result), ...
+                   'Error: filename does not match expected result.');                                        
         end
     end
 end

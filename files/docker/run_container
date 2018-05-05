@@ -1,0 +1,18 @@
+#!/bin/bash
+# Copyright (C) 2018 Laboratory of Experimental Biophysics
+# Ecole Polytechnique Federale de Lausanne
+#
+# Runs a Scipion container.
+#
+# Usage: run_container CONTAINER
+#
+# CONTAINER is the name of a Scipion image.
+# Kyle M. Douglass, 2018
+#
+
+docker run -ti --rm \
+       --name Scipion \
+       --mount source=ScipionUserData,target=/home/scipion/ScipionUserData \
+       -e DISPLAY=$DISPLAY \
+       -v /tmp/.X11-unix:/tmp/.X11-unix \
+       $1
