@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 10-Apr-2018 11:59:59
+% Last Modified by GUIDE v2.5 07-May-2018 22:33:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -237,6 +237,7 @@ function particleFilter_Callback(hObject, eventdata, handles)
 % hObject    handle to particleFilter (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 particleFilter_GUI
 
 
@@ -257,10 +258,12 @@ manualClassifier_GUI;
 
 
 % --------------------------------------------------------------------
-function Untitled_18_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_18 (see GCBO)
+function averageParticles_Callback(hObject, eventdata, handles)
+% hObject    handle to averageParticles (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+average_particles_GUI
 
 
 % --------------------------------------------------------------------
