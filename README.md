@@ -1,6 +1,6 @@
-**About SPARTAN**
+**About**
 
-A general-purpose particle analysis software for single-molecule localization microscopy (SMLM) data. Our software is integrated into a newly developed framework to perform multi-color 3D reconstruction from 2D SMLM data. 
+SPARTAN is a general-purpose particle analysis software for single-molecule localization microscopy (SMLM). The software is integrated into a newly developed framework to perform multi-color 3D reconstruction from 2D SMLM data. 
 
 [Documentation](https://github.com/christian-7/MultiColorSPR/wiki) 
 
