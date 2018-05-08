@@ -22,7 +22,7 @@ function varargout = average_particles_GUI(varargin)
 
 % Edit the above text to modify the response to help average_particles_GUI
 
-% Last Modified by GUIDE v2.5 07-May-2018 21:35:14
+% Last Modified by GUIDE v2.5 08-May-2018 21:54:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,6 +67,9 @@ handles.usfac       = 100;
 handles.angrange     = 360;
 handles.angstep     = 3;
 handles.iterations  = 10;
+
+handles.save_IM     = 1;
+handles.save_locs   = 1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -136,11 +139,14 @@ function loadParticles_Callback(hObject, eventdata, handles)
 
     [handles.FileName,handles.FilePath] = uigetfile({'*.mat'},'Select Particles (.m file)');
     
+    [path,handles.SaveName,ext] = fileparts(handles.FileName);
+    
     % Read the selected file into the variable
     
-    cd(handles.FilePath);handles.FileName
-    temp         = load(handles.FileName);
-    handles.locsParticles         = temp.Particles_Selected; 
+    cd(handles.FilePath);
+    temp                            = load(handles.FileName);
+    name_temp                       = fieldnames(temp);
+    handles.locsParticles           = eval(['temp.' name_temp{1,1}]);
     
     disp('Reading Particles ...');
     
@@ -154,10 +160,21 @@ function loadParticles_Callback(hObject, eventdata, handles)
     
     disp('Coverting particles ...');
     
+    handles.locsParticles
+    
+    if handles.input == 1;
+    
     [handles.MList,handles.data0] = convertInputAlignment(handles.locsParticles,handles.PxlSize);
+    
+    else
+    
+     [handles.MList_C1,handles.data0_C1] = convertInputAlignment(handles.locsParticles(:,1),handles.PxlSize);
+     [handles.MList_C2,handles.data0_C2] = convertInputAlignment(handles.locsParticles(:,2),handles.PxlSize);
+        
+    end
    
     disp('Done coverting particles ...');
-
+    
     guidata(hObject, handles); % Update handles structure
 
 
@@ -396,10 +413,12 @@ function runAlign_Callback(hObject, eventdata, handles)
 
 handles                  = guidata(hObject);
 
+if handles.input == 1; 
+
 [aligniter,iterIm,s,n_frame,allIm,data,images0,ParticlesAligned] = runAlignmentXS(handles.MList,handles.data0,handles.imsize,handles.zoomFactor,... 
                                                                                   handles.PxlSize, handles.Conversion, handles.usfac,... 
                                                                                   handles.angrange,handles.angstep,handles.iterations);
-                                                                                                                                                            
+                                                                 
 % display iterations
 
 sumim = zeros(s,s);
@@ -422,3 +441,139 @@ subplot(NofSubplots,NofSubplots,1+i);imshow(autocontrast(regi));title(['Iteratio
 end
 
 handles.locsParticles(:,2) = ParticlesAligned;
+handles.imAligned = regi;
+
+% 2C input data
+
+else 
+
+[aligniter,iterIm,s,n_frame,allIm,data,images0,ParticlesAligned] = runAlignmentXS_2C(handles.MList_C1,handles.data0_C1,handles.data0_C2,...
+                                                                                     handles.imsize,handles.zoomFactor,... 
+                                                                                     handles.PxlSize, handles.Conversion, handles.usfac,... 
+                                                                                     handles.angrange,handles.angstep,handles.iterations);                                                                                                                                                            
+% display iterations for channel 1 and final overlay
+
+sumim = zeros(s,s);
+
+for index = 1:n_frame
+    sumim = sumim + images0(:,:,index);
+end
+
+NofSubplots = ceil(sqrt(handles.iterations));
+
+figure;
+subplot(NofSubplots,NofSubplots,1);imshow(autocontrast(sumim));title('to be registered'); hold on;
+
+for i = 1:handles.iterations;
+
+regi = iterIm(:,:,i);
+    
+subplot(NofSubplots,NofSubplots,1+i);imshow(autocontrast(regi));title(['Iteration ',num2str(i)]); hold on;
+
+end
+
+handles.locsParticles(:,2:3) = ParticlesAligned;
+
+% Load both images and make overlay
+
+sum_Ch1x = []; sum_Ch2x = []; sum_Ch1y = []; sum_Ch2y = [];
+
+for i = 1:size(ParticlesAligned,1);
+    
+    sum_Ch1x  = vertcat(sum_Ch1x, ParticlesAligned{i,1}(:,2)-mean(ParticlesAligned{i,1}(:,2)));
+    sum_Ch1y  = vertcat(sum_Ch1y, ParticlesAligned{i,1}(:,3)-mean(ParticlesAligned{i,1}(:,3)));
+    sum_Ch2x  = vertcat(sum_Ch2x, ParticlesAligned{i,2}(:,2)-mean(ParticlesAligned{i,2}(:,2)));
+    sum_Ch2y  = vertcat(sum_Ch2y, ParticlesAligned{i,2}(:,3)-mean(ParticlesAligned{i,2}(:,3)));
+
+end
+    
+width  = round(max([sum_Ch1x;sum_Ch2x])*10);
+heigth = round(max([sum_Ch1y;sum_Ch2y])*10);
+
+im_Ch1 = hist3([sum_Ch1x, sum_Ch1y],[width heigth]);
+im_Ch2 = hist3([sum_Ch2x, sum_Ch2y],[width heigth]);
+
+figure
+imshow(imfuse(imgaussfilt(im_Ch1,1),imgaussfilt(im_Ch2,1)));
+
+handles.im_Ch1 = im_Ch1;
+handles.im_Ch2 = im_Ch2;
+
+end
+
+guidata(hObject, handles); % Update handles structure
+    
+
+
+% --- Executes on button press in saveResults.
+function saveResults_Callback(hObject, eventdata, handles)
+% hObject    handle to saveResults (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+[name,path] = uiputfile([handles.SaveName '_aligned.mat']);
+cd(path);
+    
+if handles.save_Im == 1;
+    
+    if handles.input == 1; 
+    
+    toSave = handles.imAligned;
+    imwrite(toSave,[handles.SaveName '_aligned.tiff']);
+    
+    else
+        
+    toSave = handles.im_Ch1;
+    imwrite(toSave,[handles.SaveName '_Ch1_aligned.tiff']);
+    
+    toSave = handles.im_Ch2;
+    imwrite(toSave,[handles.SaveName '_Ch1_aligned.tiff']);
+    
+    end
+    
+else
+end
+
+if handles.save_locs == 1;
+    
+    toSave = handles.locsParticles;
+    save(name,toSave);
+    
+else
+end
+
+
+
+
+
+
+
+% --- Executes on button press in save_IM.
+function save_IM_Callback(hObject, eventdata, handles)
+% hObject    handle to save_IM (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of save_IM
+
+handles                  = guidata(hObject);
+handles.save_IM          = get(hObject,'Value');
+guidata(hObject, handles); % Update handles structure
+
+
+
+
+
+% --- Executes on button press in save_Locs.
+function save_Locs_Callback(hObject, eventdata, handles)
+% hObject    handle to save_Locs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of save_Locs
+
+handles                  = guidata(hObject);
+handles.save_locs          = get(hObject,'Value');
+guidata(hObject, handles); % Update handles structure

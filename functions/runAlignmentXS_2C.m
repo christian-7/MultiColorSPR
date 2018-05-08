@@ -1,4 +1,4 @@
-function [aligniter,iterIm,s,n_frame,allIm,data,images0,ParticlesAligned] = runAlignment(MList,data0,imsize,zoomfactor, pixelsize, photonpercount,usfac,angrange,angstep,n_iteration);
+function [aligniter,iterIm,s,n_frame,allIm,data,images0,ParticlesAligned] = runAlignmentXS_2C(MList,data0,data0_C2,imsize,zoomfactor, pixelsize, photonpercount,usfac,angrange,angstep,n_iteration);
 
 % The 2D alignment and averaging code was developed by Xiaoyu Shi@Bo Huang Lab at UCSF
 % The procedure is described in: Shi, Xiaoyu et al., Nature Cell Biology 19.10 (2017): 1178.
@@ -17,5 +17,5 @@ end
 
 %% align & save aligned molec list
 
-[aligniter,iterIm,s,n_frame,allIm,data,ParticlesAligned] = rotregistrationALL(images0,data0,usfac,angrange,angstep,n_iteration,zoomfactor);
+[aligniter,iterIm,s,n_frame,allIm,data,ParticlesAligned] = rotregistrationALL_2C(images0,data0,data0_C2,usfac,angrange,angstep,n_iteration,zoomfactor);
 
