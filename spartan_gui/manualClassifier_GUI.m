@@ -22,7 +22,7 @@ function varargout = manualClassifier_GUI(varargin)
 
 % Edit the above text to modify the response to help manualClassifier_GUI
 
-% Last Modified by GUIDE v2.5 10-Apr-2018 09:13:34
+% Last Modified by GUIDE v2.5 08-May-2018 22:05:32
 
 % Last Modified by GUIDE v2.5 05-Apr-2018 21:40:24
 
@@ -335,7 +335,3 @@ cd(handles.Path_Ch1);
 filename1 = [handles.Name_Ch1 '_training.mat']; save(filename1,'training');
 
 % Add table
-
-
-
-

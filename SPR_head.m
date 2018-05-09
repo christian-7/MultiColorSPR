@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 07-May-2018 22:33:53
+% Last Modified by GUIDE v2.5 08-May-2018 22:23:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -280,3 +280,10 @@ function startSim_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 simulator_GUI
+
+
+% --------------------------------------------------------------------
+function svn_class_Callback(hObject, eventdata, handles)
+% hObject    handle to svn_class (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
