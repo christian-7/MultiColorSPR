@@ -54,10 +54,7 @@ function SPR_head_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for SPR_head
 
-addpath('functions');
-addpath('files');
-addpath('spartan_gui')
-addpath('smlm_simulator')
+addpath(genpath(pwd));
 
 handles.output = hObject;
 

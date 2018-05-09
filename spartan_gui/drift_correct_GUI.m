@@ -397,7 +397,10 @@ function splineFiduc_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
-[handles.locs_Ch1_DC, handles.Fid_Ch1_DC,handles.locs_Ch2_DC, handles.Fid_Ch2_DC] = splineFit_Fiducials(handles.Avg_Ch1_new,handles.Avg_Ch2_new,handles.NbrBins,handles.FilterRad,handles.smoothF, handles.startFrame,handles);
+toSave = handles.Avg_Ch1_new;
+save('Avg_Ch1.mat','toSave');
+
+[handles.locs_Ch1_DC, handles.Fid_Ch1_DC,handles.locs_Ch2_DC, handles.Fid_Ch2_DC] = splineFit_Fiducials(handles.Avg_Ch1_new,handles.Avg_Ch2_new,handles.NbrBins,handles.FilterRad,handles.smoothF,handles.startFrame,handles);
 
 fprintf('\n -- Data Drift Corrected --\n')
 

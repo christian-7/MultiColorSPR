@@ -3,7 +3,7 @@ function [splineRes, AvgCurve, p] = splineFit(xData,yData,NbrBins,radius,smoothi
 % xData             = Avg_Ch1_new(:,1);
 % yData             = Avg_Ch1_new(:,2);
 % NbrBins           = 200;
-% smoothingFactor   = 100;
+% smoothingFactor   = 500;
 % radius            = 100;
 
 binwidth = ((max(xData)-min(xData))/NbrBins)/2;
@@ -22,7 +22,7 @@ for i = min(xData):2*binwidth:max(xData);
     count = count + 1;
     
 end
-% 
+
 % figure  
 % scatter(xData,yData), hold on;
 % plot(AvgCurve(:,1),AvgCurve(:,2),'r')
