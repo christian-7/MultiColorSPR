@@ -22,7 +22,7 @@ function varargout = average_particles_GUI(varargin)
 
 % Edit the above text to modify the response to help average_particles_GUI
 
-% Last Modified by GUIDE v2.5 08-May-2018 21:54:49
+% Last Modified by GUIDE v2.5 11-May-2018 14:03:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,6 +70,8 @@ handles.iterations  = 10;
 
 handles.save_IM     = 1;
 handles.save_locs   = 1;
+handles.refCh       = 2;
+handles.poi         = 1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -168,12 +170,24 @@ function loadParticles_Callback(hObject, eventdata, handles)
     
     else
     
-     [handles.MList_C1,handles.data0_C1] = convertInputAlignment(handles.locsParticles(:,1),handles.PxlSize);
-     [handles.MList_C2,handles.data0_C2] = convertInputAlignment(handles.locsParticles(:,2),handles.PxlSize);
-        
+    [handles.MList_C1,handles.data0_C1,handles.MList_C2,handles.data0_C2] = convertInputAlignment2C(handles.locsParticles(:,handles.refCh),handles.locsParticles(:,handles.poi),handles.PxlSize);% (refCh,poICh,pxlsize)
+    
     end
    
     disp('Done coverting particles ...');
+    
+    if handles.input == 1;
+    
+    textLabel = sprintf([num2str(max(handles.data0(:,7))) ' Particles Loaded']);
+    set(handles.NbrOfParticles, 'String', textLabel);
+    
+    else
+    
+    textLabel = sprintf([num2str(max(handles.data0_C1(:,7))) ' Particles Loaded']);
+    set(handles.NbrOfParticles, 'String', textLabel);
+    
+    end
+    
     
     guidata(hObject, handles); % Update handles structure
 
@@ -440,7 +454,7 @@ subplot(NofSubplots,NofSubplots,1+i);imshow(autocontrast(regi));title(['Iteratio
 
 end
 
-handles.locsParticles(:,2) = ParticlesAligned;
+handles.ParticlesAligned = ParticlesAligned;
 handles.imAligned = regi;
 
 % 2C input data
@@ -472,7 +486,7 @@ subplot(NofSubplots,NofSubplots,1+i);imshow(autocontrast(regi));title(['Iteratio
 
 end
 
-handles.locsParticles(:,2:3) = ParticlesAligned;
+handles.ParticlesAligned = ParticlesAligned;
 
 % Load both images and make overlay
 
@@ -482,10 +496,13 @@ for i = 1:size(ParticlesAligned,1);
     
     sum_Ch1x  = vertcat(sum_Ch1x, ParticlesAligned{i,1}(:,2)-mean(ParticlesAligned{i,1}(:,2)));
     sum_Ch1y  = vertcat(sum_Ch1y, ParticlesAligned{i,1}(:,3)-mean(ParticlesAligned{i,1}(:,3)));
-    sum_Ch2x  = vertcat(sum_Ch2x, ParticlesAligned{i,2}(:,2)-mean(ParticlesAligned{i,2}(:,2)));
-    sum_Ch2y  = vertcat(sum_Ch2y, ParticlesAligned{i,2}(:,3)-mean(ParticlesAligned{i,2}(:,3)));
+    sum_Ch2x  = vertcat(sum_Ch2x, ParticlesAligned{i,2}(:,2)-mean(ParticlesAligned{i,1}(:,2)));
+    sum_Ch2y  = vertcat(sum_Ch2y, ParticlesAligned{i,2}(:,3)-mean(ParticlesAligned{i,1}(:,3)));
 
 end
+% 
+% figure
+% scatter(sum_Ch1x,sum_Ch1y,'.')
     
 width  = round(max([sum_Ch1x;sum_Ch2x])*10);
 heigth = round(max([sum_Ch1y;sum_Ch2y])*10);
@@ -515,21 +532,23 @@ handles = guidata(hObject);
 
 [name,path] = uiputfile([handles.SaveName '_aligned.mat']);
 cd(path);
+
+handles
     
-if handles.save_Im == 1;
+if handles.save_IM == 1;
     
     if handles.input == 1; 
     
-    toSave = handles.imAligned;
+    toSave = autocontrast(handles.imAligned);
     imwrite(toSave,[handles.SaveName '_aligned.tiff']);
     
     else
         
-    toSave = handles.im_Ch1;
-    imwrite(toSave,[handles.SaveName '_Ch1_aligned.tiff']);
+    locsCH1_Aligned = handles.im_Ch1;
+    imwrite(autocontrast(locsCH1_Aligned),[handles.SaveName '_Ch1_aligned.tiff']);
     
-    toSave = handles.im_Ch2;
-    imwrite(toSave,[handles.SaveName '_Ch1_aligned.tiff']);
+    locsCH2_Aligned = handles.im_Ch2;
+    imwrite(autocontrast(locsCH2_Aligned),[handles.SaveName '_Ch2_aligned.tiff']);
     
     end
     
@@ -538,8 +557,8 @@ end
 
 if handles.save_locs == 1;
     
-    toSave = handles.locsParticles;
-    save(name,toSave);
+    locsAligned = handles.ParticlesAligned;
+    save([handles.SaveName '_aligned.mat'],'locsAligned');
     
 else
 end
@@ -577,3 +596,47 @@ function save_Locs_Callback(hObject, eventdata, handles)
 handles                  = guidata(hObject);
 handles.save_locs          = get(hObject,'Value');
 guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on selection change in refCh_Input.
+function refCh_Input_Callback(hObject, eventdata, handles)
+% hObject    handle to refCh_Input (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns refCh_Input contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from refCh_Input
+
+handles.output = hObject;
+
+contents = cellstr(get(hObject,'String'));
+
+handles.input = contents{get(hObject,'Value')}; 
+
+if  isempty(strmatch('2',handles.input));
+    display('-- Reference Channel 1 --'); 
+    handles.refCh = 1;
+    handles.poi   = 2;
+
+else 
+    display('-- Reference Channel 2 --'); 
+    handles.refCh = 2;
+    handles.poi   = 1;
+
+end    
+    
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function refCh_Input_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to refCh_Input (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
