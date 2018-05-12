@@ -500,12 +500,11 @@ for i = 1:size(ParticlesAligned,1);
     sum_Ch2y  = vertcat(sum_Ch2y, ParticlesAligned{i,2}(:,3)-mean(ParticlesAligned{i,1}(:,3)));
 
 end
-% 
-% figure
-% scatter(sum_Ch1x,sum_Ch1y,'.')
+
+SRpxlsize = 10;
     
-width  = round(max([sum_Ch1x;sum_Ch2x])*10);
-heigth = round(max([sum_Ch1y;sum_Ch2y])*10);
+width  = round(max(max(sum_Ch1x)-min(sum_Ch1x), max(sum_Ch2x)-min(sum_Ch2x))*SRpxlsize);
+heigth = round(max(max(sum_Ch1y)-min(sum_Ch1y), max(sum_Ch2y)-min(sum_Ch2y))*SRpxlsize);
 
 im_Ch1 = hist3([sum_Ch1x, sum_Ch1y],[width heigth]);
 im_Ch2 = hist3([sum_Ch2x, sum_Ch2y],[width heigth]);
