@@ -35,7 +35,7 @@
 
 addpath('/Supplementary_Software/functions/');
 
-savename = 'Cep152_Sas6_extractedParticles_DBSCAN_filtered.mat';
+savename = 'Laine_Data_AF647_Malk_extractedParticles_DBSCAN_filtered.mat';
 
 %% Filter by the number of locs per ROI
 
