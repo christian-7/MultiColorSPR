@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 08-May-2018 22:23:22
+% Last Modified by GUIDE v2.5 17-May-2018 20:19:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -204,7 +204,7 @@ function documentation_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-open('Documentation.pdf');
+open('https://github.com/christian-7/MultiColorSPR/wiki','-browser');
 
 % --------------------------------------------------------------------
 function sample_data_Callback(hObject, eventdata, handles)
@@ -282,5 +282,12 @@ simulator_GUI
 % --------------------------------------------------------------------
 function svn_class_Callback(hObject, eventdata, handles)
 % hObject    handle to svn_class (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Untitled_21_Callback(hObject, eventdata, handles)
+% hObject    handle to Untitled_21 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
