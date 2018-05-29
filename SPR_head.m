@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 17-May-2018 20:19:08
+% Last Modified by GUIDE v2.5 29-May-2018 19:57:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -285,9 +285,25 @@ function svn_class_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+trainSVM
 
 % --------------------------------------------------------------------
-function Untitled_21_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_21 (see GCBO)
+function startScipion_Callback(hObject, eventdata, handles)
+% hObject    handle to startScipion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+em.ScipionWorkflow.launchDockerManager();
+
+% --------------------------------------------------------------------
+function startScipion_1C_Callback(hObject, eventdata, handles)
+% hObject    handle to startScipion_1C (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function startScipion_2C_Callback(hObject, eventdata, handles)
+% hObject    handle to startScipion_2C (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
