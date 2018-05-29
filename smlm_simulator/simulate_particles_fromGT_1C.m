@@ -5,7 +5,7 @@ clear; clc; close all;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-num_of_structures   = 100;
+num_of_structures   = 6000;
                                                                             % Set simulation parameters                                                           
 labelling_eff   = 0.8;
 nframes         = 20e3;
