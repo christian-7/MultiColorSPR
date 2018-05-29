@@ -63,7 +63,7 @@
         "runName": null,
         "runMode": 0,
         "memory": 2.0,
-        "inputMicrographs": "58.outputMicrographs"
+        "inputMicrographs": "2.outputMicrographs"
     },
     {
         "object.className": "XmippProtExtractParticles",
@@ -90,6 +90,7 @@
         "hostName": "localhost",
         "numberOfThreads": 4,
         "numberOfMpi": 1,
+        "inputMicrographs": "58.outputMicrographs",
         "inputCoordinates": "143.outputCoordinates"
     },
     {
