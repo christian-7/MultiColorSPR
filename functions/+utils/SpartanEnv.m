@@ -31,6 +31,7 @@ classdef (Sealed) SpartanEnv < handle
         scipionUserDataPath = '';
         chimeraPath = '';
         chimeraScriptsDir = '';
+        scipionSingleTemplate = '';
         scipionPairedTemplate = '';
     end
 end

@@ -232,7 +232,11 @@ classdef ScipionWorkflow < em.PackageInterface
     methods (Access = private)
         function generateWorkflow(obj)
             % GENERATEWORKFLOW Creates the workflow from the JSON template.
-            filename = obj.spartanEnv.scipionPairedTemplate;
+            if obj.pairedAnalysis
+                filename = obj.spartanEnv.scipionPairedTemplate;
+            else
+                filename = obj.spartanEnv.scipionSingleTemplate;
+            end
             template = fileread(filename);
             
             % Split montage paths into path and pattern
