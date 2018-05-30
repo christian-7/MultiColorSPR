@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 29-May-2018 19:57:48
+% Last Modified by GUIDE v2.5 30-May-2018 08:27:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -285,7 +285,7 @@ function svn_class_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-trainSVM
+trainSVM_GUI
 
 % --------------------------------------------------------------------
 function startScipion_Callback(hObject, eventdata, handles)
@@ -305,5 +305,12 @@ function startScipion_1C_Callback(hObject, eventdata, handles)
 % --------------------------------------------------------------------
 function startScipion_2C_Callback(hObject, eventdata, handles)
 % hObject    handle to startScipion_2C (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Untitled_21_Callback(hObject, eventdata, handles)
+% hObject    handle to Untitled_21 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
