@@ -22,7 +22,7 @@ function varargout = Scipion_1C(varargin)
 
 % Edit the above text to modify the response to help Scipion_1C
 
-% Last Modified by GUIDE v2.5 30-May-2018 09:11:25
+% Last Modified by GUIDE v2.5 30-May-2018 10:04:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,8 @@ function Scipion_1C_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Scipion_1C
 handles.output = hObject;
 
+handles.projectName = 'Single-Project';
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -73,15 +75,82 @@ function varargout = Scipion_1C_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
+% --- Executes on button press in loadRef.
+function loadRef_Callback(hObject, eventdata, handles)
+% hObject    handle to loadRef (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.output = hObject;
 
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton2 (see GCBO)
+[FileName_Ref,Path_Ref] = uigetfile({'*.tif'},'Load Ref Data');
+    
+    % Read the selected file into the variable
+    
+  [path,Name_Ref,ext_Ref] = fileparts(FileName_Ref);
+    
+    handles.Ext_Ref     = ext_Ref ;
+    handles.Path_Ref    = Path_Ref;
+    handles.Name_Ref    = Name_Ref;
+    
+    
+    if isempty(handles.loadRef)==0;
+    
+    set(handles.loadRef,'BackgroundColor','green');
+    
+    else end
+    
+disp('Ref Data loaded.');
+
+guidata(hObject, handles);
+
+%        str2double(get(hObject,'String')) returns contents of projectName as a double
+
+
+
+
+function projectName_Callback(hObject, eventdata, handles)
+% hObject    handle to projectName (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of projectName as text
+%        str2double(get(hObject,'String')) returns contents of projectName as a double
+
+handles.output = hObject;
+
+handles.projectName =  get(hObject,'String');  
+
+guidata(hObject, handles);
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function projectName_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to projectName (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in startScipion.
+function startScipion_Callback(hObject, eventdata, handles)
+% hObject    handle to startScipion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+pairedAnalysis = false;
+
+swf = em.ScipionWorkflow(handles.projectName, pairedAnalysis, handles.Path_Ref, ...
+                         handles.Name_Ref,'scipionSource', 'docker');
+                     
+swf.scipionSource                  
+% Launch Scipion with the two-protein workflow
+%
+swf.launchWorkflow();

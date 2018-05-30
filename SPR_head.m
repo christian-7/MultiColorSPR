@@ -49,7 +49,7 @@ function SPR_head_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% handles    structuswf = em.ScipionWorkflow(projectName, pairedAnalysis, montageRefPath, ...
 % varargin   command line arguments to SPR_head (see VARARGIN)
 
 % Choose default command line output for SPR_head
@@ -295,11 +295,17 @@ function startScipion_Callback(hObject, eventdata, handles)
 
 em.ScipionWorkflow.launchDockerManager();
 
+% Launches the Scipion manager from your native installation.
+% em.ScipionWorkflow.launchNativeManager();
+
+
 % --------------------------------------------------------------------
 function startScipion_1C_Callback(hObject, eventdata, handles)
 % hObject    handle to startScipion_1C (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+Scipion_1C;
 
 
 % --------------------------------------------------------------------
@@ -307,6 +313,8 @@ function startScipion_2C_Callback(hObject, eventdata, handles)
 % hObject    handle to startScipion_2C (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+Scipion_2C;
 
 
 % --------------------------------------------------------------------
