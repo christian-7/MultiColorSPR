@@ -67,6 +67,31 @@ classdef ScipionWorkflow < em.PackageInterface
             end
         end
         
+        function launchDockerManagerMac()
+            %LAUNCHDOCKERMANAGER Launches the Scipion manager in Docker.
+            %
+            % Launches the Scipion manager through Docker.
+            env = utils.SpartanEnv.getEnvironment();
+            disp('Launching the Scipion Manager Mac...')
+            
+            cmd = ['/usr/local/bin/docker run -e DISPLAY=192.168.1.103:0 -it --rm --name test epflbiophys/scipion:1.2'];
+            
+%           cmd = ['/usr/local/bin/docker run -it --rm -d' ...
+%                    '    --name Scipion ' ...
+%                    '    --mount type=bind,source=' ...
+%                    env.scipionUserDataPath ...
+%                    ',target=/home/scipion/ScipionUserData ' ...
+%                    '    --mount source=ScipionInputData,target=/home/scipion/inputs ' ...
+%                    '    -e DISPLAY=192.168.1.103:0 ' ...
+%                    '    -v /tmp/.X11-unix:/tmp/.X11-unix ' ...
+%                    '    epflbiophys/scipion:1.2'];
+               
+            [status, cmdout] = system(cmd);
+            if (status == 0)
+                disp(['Scipion process launched in Docker container: ' cmdout]);
+            end
+        end
+        
         function launchNativeManager()
             %LAUNCHNATIVEMANAGER Launches the Scipion manager natively.
             %
