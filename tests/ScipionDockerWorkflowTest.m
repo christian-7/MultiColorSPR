@@ -95,6 +95,33 @@ classdef ScipionDockerWorkflowTest < matlab.unittest.TestCase
     end
     
     methods (Test)
+        function launchedSingleWorkflowTest(testCase)
+            % LAUNCHPAIREDWORKFLOWTEST Unit test for Docker Scipion.
+            % This unit test verifies that a new Scipion project may be
+            % launched with a premade single particle workflow for doing
+            % paired protein analyses. It launches a native Scipion
+            % installation.
+            
+            import em.ScipionWorkflow;
+            pairedAnalysis = false;
+            swf = ScipionWorkflow('docker', ...
+                                  testCase.PROJECTNAME, ...
+                                  pairedAnalysis, ...
+                                  testCase.tempFolderRef, ...
+                                  testCase.REFLABEL);
+            swf.launchWorkflow();
+            
+            % Kill Scipion
+            assert(~isempty(swf.PID), ...
+                   'Error: Docker container not assigned.');
+               
+            [status, cmdout] = system(['docker container stop ' ...
+                                        num2str(swf.PID)]);
+            disp(cmdout);
+            
+            assert(status == 0);
+        end
+        
         function launchPairedWorkflowTest(testCase)
             % LAUNCHPAIREDWORKFLOWTEST Unit test for Docker Scipion.
             % This unit test verifies that a new Scipion project may be
@@ -102,13 +129,13 @@ classdef ScipionDockerWorkflowTest < matlab.unittest.TestCase
             % analyses. It launches a native Scipion installation.
             import em.ScipionWorkflow;
             pairedAnalysis = true;
-            swf = ScipionWorkflow(testCase.PROJECTNAME, ...
+            swf = ScipionWorkflow('docker', ...
+                                  testCase.PROJECTNAME, ...
                                   pairedAnalysis, ...
                                   testCase.tempFolderRef, ...
                                   testCase.REFLABEL, ...
                                   testCase.tempFolderPair, ...
-                                  testCase.POILABEL, ...
-                                  'scipionSource', 'docker');
+                                  testCase.POILABEL);
             swf.launchWorkflow();
             
             % Kill Scipion
