@@ -158,6 +158,9 @@ classdef ScipionWorkflow < em.PackageInterface
             %
             % Inputs
             % ------
+            % scipionSource : str
+            %     Determines whether Scipion will be run natively or in
+            %     Docker. Current options are 'native' and 'docker'.
             % projectName : str
             %     A descriptive name to give to the project.
             % pairedAnalysis : boolean
@@ -175,10 +178,6 @@ classdef ScipionWorkflow < em.PackageInterface
             %     if pairedAnalysis is set to true.
             % poiLabel : str (optional)
             %     The text label for the protein of interest.
-            % scipionSource : str (optional)
-            %     A name/value pair that determines the Scipion source.
-            %     Current options are 'native' and 'docker'. The default is
-            %     'native'.
             %
             % Parameters
             % ----------
@@ -192,7 +191,8 @@ classdef ScipionWorkflow < em.PackageInterface
             
             defaultRefLabel = 'Reference_Protein';
             defaultPoiLabel = 'Paired_Protein';
-            
+        
+            addRequired(p, 'scipionSource', @ischar)
             addRequired(p, 'projectName', @ischar);
             addRequired(p, 'pairedAnalysis', @islogical);
             addRequired(p, 'pathToRefMontage', @ischar);
@@ -200,20 +200,25 @@ classdef ScipionWorkflow < em.PackageInterface
             addOptional(p, 'pathToPoiMontage', '', @ischar);
             addOptional(p, 'poiLabel', defaultPoiLabel, @ischar);
             addParameter(p, 'pathToProject', '', @ischar);
-            addParameter(p, 'scipionSource', 'native', @ischar);
             
             parse(p, projectName, pairedAnalysis, pathToRefMontage, ...
                   varargin{:});
             
+            obj.scipionSource = p.Results.scipionSource;
             obj.projectName = p.Results.projectName;
             obj.pairedAnalysis = p.Results.pairedAnalysis;
             obj.pathToRefMontage = p.Results.pathToRefMontage;
             obj.refLabel = p.Results.refLabel;
             obj.poiLabel = p.Results.poiLabel;
-            obj.scipionSource = p.Results.scipionSource;
             
-            % TODO: ADD CODE FOR SINGLE POI ANALYSIS
-            
+            if (strcmp(obj.scipionSource, 'native') || strcmp(obj.scipionSource, 'docker'))
+                disp(['Scipion source: ' obj.scipionSource]);
+            else
+                error(['Scipion source must be either ''native'' or ' ...
+                       '''docker''. ' p.Results.scipionSource ' was ' ...
+                       'provided.']);
+            end
+                        
             if (obj.pairedAnalysis) && ( isempty(p.Results.pathToPoiMontage) )
                 error('ScipionWorkflow:NotEnoughInputs', ...
                     ['Error! \nTwo montages must be supplied if '...
