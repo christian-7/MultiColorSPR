@@ -147,10 +147,7 @@ function startScipion_Callback(hObject, eventdata, handles)
 
 pairedAnalysis = false;
 
-swf = em.ScipionWorkflow(handles.projectName, pairedAnalysis, handles.Path_Ref, ...
-                         handles.Name_Ref,'scipionSource', 'docker');
+swf = em.ScipionWorkflow('docker', handles.projectName, pairedAnalysis, handles.Path_Ref, ...
+                         handles.Name_Ref);
                      
-swf.scipionSource                  
-% Launch Scipion with the two-protein workflow
-%
 swf.launchWorkflow();

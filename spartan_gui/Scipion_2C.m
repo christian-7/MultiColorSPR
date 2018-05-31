@@ -119,11 +119,7 @@ function loadRef_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.output = hObject;handles.output = hObject;
-
-handles.projectName =  get(hObject,'String');  
-
-guidata(hObject, handles);
+handles.output = hObject;
 
 [FileName_Ref,Path_Ref] = uigetfile({'*.tif'},'Load Ref Data');
     
@@ -142,8 +138,8 @@ guidata(hObject, handles);
     
     else end
     
-disp('Ref Data loaded.');
-handles
+disp('Reference Data loaded.');
+
 guidata(hObject, handles);
 
 
@@ -214,12 +210,10 @@ function startScipion_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles
-
 pairedAnalysis = true;
 
-swf = em.ScipionWorkflow(handles.projectName, pairedAnalysis, handles.Path_Ref, ...
-                         handles.Name_Ref, handles.Path_POI, handles.Name_POI,'scipionSource', 'docker');
+swf = em.ScipionWorkflow('docker',handles.projectName, pairedAnalysis, handles.Path_Ref, ...
+                         handles.Name_Ref, handles.Path_POI, handles.Name_POI);
                   
 % Launch Scipion with the two-protein workflow
 %
