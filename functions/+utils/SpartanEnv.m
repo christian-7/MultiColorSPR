@@ -29,10 +29,12 @@ classdef (Sealed) SpartanEnv < handle
         spartanPath = '';
         scipionPath = '';
         scipionUserDataPath = '';
-        chimeraPath = '';
-        chimeraScriptsDir = '';
         scipionSingleTemplate = '';
         scipionPairedTemplate = '';
+        chimeraPath = '';
+        chimeraScriptsDir = '';
+        dockerPath = '';
+        dockerDisplayServer = '';
     end
 end
 
