@@ -2,10 +2,10 @@
 
 clear,clc, close all
 
-FOV = 14;
+FOV = 7;
 
-nameC1 = ['Z:\Christian-Sieben\data_HTP\2018-03-08_humanCent_3C_Sas6_Cep152_Centrin\locResults\Sas6_A647_' num2str(FOV) '_1\Sas6_A647_' num2str(FOV) '_1_MMStack_1_Localizations.csv'];
-nameC2 = ['Z:\Christian-Sieben\data_HTP\2018-03-08_humanCent_3C_Sas6_Cep152_Centrin\locResults\Cep152_DL755_' num2str(FOV) '_1\Cep152_DL755_' num2str(FOV) '_1_MMStack_1_Localizations_affineApplied.csv'];
+nameC1 = ['Z:\Christian-Sieben\data_HTP\2018-05-24_humanCent_Cep57_Cep63\locResults\Cep63_A647_' num2str(FOV) '_1\Cep63_A647_' num2str(FOV) '_1_MMStack_1_Localizations.csv'];
+nameC2 = ['Z:\Christian-Sieben\data_HTP\2018-05-24_humanCent_Cep57_Cep63\locResults\Cep57_DL755_' num2str(FOV) '_1\Cep57_DL755_' num2str(FOV) '_1_MMStack_1_Localizations_affineApplied.csv'];
 
 [filepath_Ch1,name_Ch1,ext_Ch1] = fileparts(nameC1);
 [filepath_Ch2,name_Ch2,ext_Ch2] = fileparts(nameC2);
@@ -54,7 +54,7 @@ display('-- Data loaded --')
 
 allLocs = vertcat(locs_Ch1,locs_Ch2);
 
-pxlsize = 400;
+pxlsize = 500;
 
 heigth  = round((max(allLocs(:,yCol))-min(allLocs(:,yCol)))/pxlsize);
 width   = round((max(allLocs(:,xCol))-min(allLocs(:,xCol)))/pxlsize);
@@ -125,7 +125,7 @@ end
 
 close all;
 
-selectedFid = [1];
+selectedFid = [1,3];
 
 Avg_Ch1x = []; Avg_Ch1y = []; Avg_Ch1 = []; Avg_Ch1frame = [];Avg_Ch1ID = [];
 
@@ -247,11 +247,12 @@ legend('X drift', 'Y Drift');
 %% Spline fit average 
 
 close all
+% addpath('D:\Christian\GitHub\MultiColorSPR\functions')
 
 %%%%%
 
-NbrBins             = 50;
-radius              = 200; % Radius around the fiducial center
+NbrBins             = 20;
+radius              = 400; % Radius around the fiducial center
 smoothingFactor     = 100;
 startFrame          = 2000;
 
