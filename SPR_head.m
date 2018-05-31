@@ -54,7 +54,11 @@ function SPR_head_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for SPR_head
 
-addpath(genpath(pwd));
+% Locate SPR_Head and add its folder to the path
+
+place = which('SPR_head');
+[path, name] = fileparts(place);
+addpath(genpath(path));
 
 handles.output = hObject;
 
