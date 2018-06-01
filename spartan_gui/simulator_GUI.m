@@ -22,7 +22,7 @@ function varargout = simulator_GUI(varargin)
 
 % Edit the above text to modify the response to help simulator_GUI
 
-% Last Modified by GUIDE v2.5 20-Mar-2018 22:14:50
+% Last Modified by GUIDE v2.5 01-Jun-2018 20:47:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -235,21 +235,23 @@ function preview_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
-[handles.simParticles, sim_Noise] = initiateSimulator(handles);
-
 ID = randi([1 handles.NbrStructures],1,1);
 
 figure('Position',[200 400 700 300])
 subplot(1,2,1)
 scatter3(handles.simParticles{ID, 1}(:,1),handles.simParticles{ID, 1}(:,2),handles.simParticles{ID, 1}(:,3));hold on;
-scatter3(sim_Noise{ID, 1}(:,1),sim_Noise{ID, 1}(:,2),sim_Noise{ID, 1}(:,3),'r*');hold on;
+scatter3(handles.sim_Noise{ID, 1}(:,1),handles.sim_Noise{ID, 1}(:,2),handles.sim_Noise{ID, 1}(:,3),'r*');hold on;
 view([60,40])
+title('3D view');
 axis equal
+box on
 
 subplot(1,2,2)
 scatter(handles.simParticles{ID, 1}(:,1),handles.simParticles{ID, 1}(:,2));hold on;
-scatter(sim_Noise{ID, 1}(:,1),sim_Noise{ID, 1}(:,2),'r*');
-axis([-300 300 -300 300]) 
+scatter(handles.sim_Noise{ID, 1}(:,1),handles.sim_Noise{ID, 1}(:,2),'r*');
+axis equal
+title('XY projection');
+box on
 
 guidata(hObject, handles); % Update handles structure
 
@@ -289,14 +291,38 @@ handles = guidata(hObject);
 
 ID = randi([1 handles.NbrStructures],1,1);
 
-figure
+figure('Position',[100 400 600 300])
 subplot(1,2,1)
 scatter3(handles.simParticles{ID, 1}(:,1),handles.simParticles{ID, 1}(:,2),handles.simParticles{ID, 1}(:,3));hold on;
-axis([-300 300 -300 300]);view([60,40]);axis equal
+view([60,40]);
+axis equal
+title('Molecule position (3D view)');
+axis equal
+box on
 
 subplot(1,2,2)
 scatter3(handles.simParticlesRes{ID, 1}(:,1),handles.simParticlesRes{ID, 1}(:,2),handles.simParticlesRes{ID, 1}(:,3),1);
-axis([-300 300 -300 300]);view([60,40]);
+view([60,40]);
 axis equal
+title('Simulated localizations (3D view)');
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on button press in init.
+function init_Callback(hObject, eventdata, handles)
+% hObject    handle to init (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+[handles.simParticles, handles.sim_Noise] = initiateSimulator(handles);
+
+    if isempty(handles.simParticles)==0;
+    
+    set(handles.init,'BackgroundColor','green');
+    
+    else end
 
 guidata(hObject, handles); % Update handles structure

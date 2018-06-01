@@ -18,42 +18,56 @@ maxNoise            = max(max(handles.GT(:,1:3)));
 minNoise            = -maxNoise; %min(min(handles.GT(:,1:3))); 
 
 
-rng('shuffle');
+a = [1, 0, 0, 0]; % initial vector
 
-a = -pi; b = pi;
-sim_cent = {};
+% Compute the random rotation axes in 3D. (u,v,w) is a unit vector pointing
+% in direction uniformly random in any direction.
 
-rand_ang(:,1) = (b-a).*rand(num_of_structures,1) + a;
-rand_ang(:,2) = (b-a).*rand(num_of_structures,1) + a;
-rand_ang(:,3) = (b-a).*rand(num_of_structures,1) + a;
+r1 = rand(num_of_structures, 1);
+r2 = rand(num_of_structures, 1);
 
-for i = 1:num_of_structures;
+phi = 2 * pi * r1;
+theta = acos(2 * r2 - 1);
 
-Rx = [1 0 0 0; ...
-     0 cos(rand_ang(i,1)) -sin(rand_ang(i,1)) 0; ...
-     0 sin(rand_ang(i,1)) cos(rand_ang(i,1)) 0; ...
-     0 0 0 1];
+u = sin(theta) .* cos(phi);
+v = sin(theta) .* sin(phi);
+w = cos(theta);
 
-tform = affine3d(Rx);
-ptCloudOutx = pctransform(ptCloud,tform);
- 
-Ry = [cos(rand_ang(i,2)) 0 sin(rand_ang(i,2)) 0; ...
-     0 1 0 0; ...
-     -sin(rand_ang(i,2)) 0 cos(rand_ang(i,2)) 0; ...
-     0 0 0 1];
- 
-tform = affine3d(Ry);
-ptCloudOuty = pctransform(ptCloudOutx,tform);
+% Uncomment this to verify that the points uniformly cover the unit sphere.
+% plot3(u, v, w, '.');
 
-Rz = [cos(rand_ang(i,3)) sin(rand_ang(i,3)) 0 0; ...
-     -sin(rand_ang(i,3)) cos(rand_ang(i,3)) 0 0; ...
-     0 0 1 0; ...
-     0 0 0 1];
+% figure;
 
-tform = affine3d(Rz);
-ptCloudOut_final = pctransform(ptCloudOuty,tform);
+for i = 1:num_of_structures
+    % Find the angle t between the initial vector and the random axis of
+    % rotation.
+    uu = u(i);
+    vv = v(i);
+    ww = w(i);
+    t = acos(dot(a, [uu, vv, ww, 0]) / norm(a));
 
- ptCloudOut_final = ptCloud;
+    % (l,m,n) is the axis of rotation.
+    ax_of_rot = cross(a(1:3), [uu, vv, ww]);
+    ax_of_rot = ax_of_rot / norm(ax_of_rot); % Makes ax_of_rot a unit vector
+    l = ax_of_rot(1); m = ax_of_rot(2); n = ax_of_rot(3);
+
+    % This rotation matrix assumes that (l,m,n) is normalized and that it
+    % passes through the origin.
+    %
+    % See section 5.2 at
+    % https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas/rotation-about-an-arbitrary-axis-in-3-dimensions.
+    
+    R = [l^2 + (1 - l^2) * cos(t), l * m * (1 - cos(t)) - n * sin(t), l * n * (1 - cos(t)) + m * sin(t), 0;
+         l * m * (1 - cos(t)) + n * sin(t), m^2 + (1 - m^2) * cos(t), m * n * (1 - cos(t)) - l * sin(t), 0;
+         l * n * (1 - cos(t)) - m * sin(t), m * n * (1 - cos(t)) + l * sin(t), n^2 + (1 - n^2) * cos(t), 0;
+         0, 0, 0, 1];
+
+%     aa = R * a';
+%     plot3(aa(1), aa(2), aa(3), '.');
+%     hold on;axis equal;
+
+tform = affine3d(R);
+ptCloudOut_final = pctransform(ptCloud,tform);
 
 % Substact the center of mass
 
