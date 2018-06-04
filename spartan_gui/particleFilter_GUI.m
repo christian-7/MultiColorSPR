@@ -22,7 +22,7 @@ function varargout = particleFilter_GUI(varargin)
 
 % Edit the above text to modify the response to help particleFilter_GUI
 
-% Last Modified by GUIDE v2.5 04-Apr-2018 15:19:30
+% Last Modified by GUIDE v2.5 04-Jun-2018 21:13:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,7 +70,7 @@ handles.channelID       = 12;
 guidata(hObject, handles);
 
 % UIWAIT makes particleFilter_GUI wait for user response (see UIRESUME)
-% uiwait(handles.particleFilter);
+% uiwait(handles.particleFilter_GUI);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -185,7 +185,6 @@ handles.output = hObject;
     
     
 global global_struct;
-
 
 handles.K         = global_struct.K;
 handles.Eps       = global_struct.Eps;

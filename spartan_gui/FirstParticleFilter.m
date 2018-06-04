@@ -79,7 +79,8 @@ handles.maxUnc_Ch2 = 30;
 
 
 
- h = findobj('Tag','particleFilter');
+%  h = findobj('Tag','particleFilter');
+ h = particleFilter_GUI;
 
  if ~isempty(h);
     g1data = guidata(h);

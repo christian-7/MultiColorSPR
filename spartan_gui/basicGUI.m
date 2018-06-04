@@ -287,18 +287,18 @@ handles = guidata(hObject);
 % pkfind
 
 handles.pkCh1 = pkfnd(handles.imBpassCh1,handles.brigthCh1,handles.diamCh1);   % brigthness threshold, diameter
-handles.pkCh2 = pkfnd(handles.imBpassCh2,handles.brigthCh1,handles.diamCh2); % brigthness threshold, diameter
+handles.pkCh2 = pkfnd(handles.imBpassCh2,handles.brigthCh2,handles.diamCh2); % brigthness threshold, diameter
 
 % Cnt
 
 handles.cntCh1 = cntrd(handles.imBpassCh1,handles.pkCh1,5); % image, position estimate, diameter of the window
 handles.cntCh2 = cntrd(handles.imBpassCh2,handles.pkCh2,5);
 
-axes(handles.pkfind_Ch1)
+axes(handles.pkfind_Ch1);cla reset;
 imshow(imadjust(handles.ImCh1));hold on;
 scatter(handles.cntCh1(:,1),handles.cntCh1(:,2),10,'r*');
 
-axes(handles.pkfind_Ch2)
+axes(handles.pkfind_Ch2);cla reset;
 imshow(imadjust(handles.ImCh2));hold on;
 scatter(handles.cntCh2(:,1),handles.cntCh2(:,2),10,'r*');
 

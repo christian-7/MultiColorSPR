@@ -22,7 +22,7 @@ function varargout = segmenter_GUI(varargin)
 
 % Edit the above text to modify the response to help segmenter_GUI
 
-% Last Modified by GUIDE v2.5 15-Mar-2018 22:04:39
+% Last Modified by GUIDE v2.5 04-Jun-2018 20:55:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -721,4 +721,3 @@ fprintf('\n -- Header Loaded -- \n');
     else end
     
 guidata(hObject, handles);
-

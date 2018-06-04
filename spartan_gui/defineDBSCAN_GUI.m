@@ -184,7 +184,8 @@ function runDBSCAN_Callback(hObject, eventdata, handles)
 
 handles = guidata(hObject);
 
- h = findobj('Tag','particleFilter');
+h = particleFilter_GUI;
+% h = findobj('Tag','particleFilter');
 
  if ~isempty(h);
     g1data = guidata(h);
@@ -230,12 +231,16 @@ axes(handles.axes1);cla reset;
 scatter(Cent_filt_2C{m,1}(Cent_filt_2C{m,1}(:,end)==1,1),Cent_filt_2C{m,1}(Cent_filt_2C{m,1}(:,end)==1,2),1,'black'); hold on;
 scatter(Cent_filt_2C{m,1}(Cent_filt_2C{m,1}(:,end)==2,1),Cent_filt_2C{m,1}(Cent_filt_2C{m,1}(:,end)==2,2),1,'red'); hold on;
 title('Raw Data')
+xlabel('nm')
+ylabel('nm')
 axis on
 box on
 
 axes(handles.axes2);cla reset;
 scatter(subsetP(:,1),subsetP(:,2),1,mod(subsetP(:,3),10))
 title('identified Clusters')
+xlabel('nm')
+ylabel('nm')
 axis on
 axis([min(dataDBS(:,1)) max(dataDBS(:,1)) min(dataDBS(:,2)) max(dataDBS(:,2))])
 box on
@@ -259,6 +264,8 @@ for i = 1:max(subset(:,end));                                               % fi
     scatter(DBSCAN_filtered{length(DBSCAN_filtered),1}(:,1),DBSCAN_filtered{length(DBSCAN_filtered),1}(:,2),1);hold on;
     title('selected Clusters')
     axis on
+    xlabel('nm')
+    ylabel('nm')
     axis([min(dataDBS(:,1)) max(dataDBS(:,1)) min(dataDBS(:,2)) max(dataDBS(:,2))])
     box on
     
@@ -277,6 +284,8 @@ scatter(DBSCAN_filtered{i,1}(DBSCAN_filtered{i,1}(:,end-1)==2,1),DBSCAN_filtered
 title('Found Particles');
 legend('Channel 1', 'Channel 2');
 box on; axis square;
+xlabel('nm')
+ylabel('nm')
 
 end
 

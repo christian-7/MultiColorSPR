@@ -6,7 +6,7 @@ function [DBSCAN_filtered,Data_DBSCANed] = calculateShape(DBSCAN_filtered);
 
 % rmpath('/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/functions/FRCresolutionfunctions');
 % addpath('/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/functions/FRCresolutionfunctions');
-
+% 
 % rmpath('/Users/christian/Documents/Arbeit/MatLab/FRCresolution_software/matlabdistribution');
 % addpath('/Users/christian/Documents/Arbeit/MatLab/FRCresolution_software/matlabdistribution');
 
@@ -345,6 +345,8 @@ end
 fprintf([' \n  -- Calculated 2nd Circularity Estimate in ', num2str(toc),' sec --  \n ']);
 
 %% Put the data into a new nested structure for clarity
+
+Data_DBSCANed = {};
 
 for i = 1:size(DBSCAN_filtered,1);
 
