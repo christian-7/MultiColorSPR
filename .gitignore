@@ -1,5 +1,6 @@
 *~
 tmp/
 example_data/
+functions/dependencies/
 .ipynb_checkpoints/
 *.asv
