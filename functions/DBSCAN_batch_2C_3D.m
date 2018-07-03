@@ -2,8 +2,8 @@ function [DBSCAN_filtered] = DBSCAN_batch_2C_3D(dataDBS,minLength_C1,minLength_C
 
 % Run DBSCAN on each particle 
 
-% k   = 20; % 20, 40                                                               % minimum number of neighbors within Eps
-% Eps = 20; % 20, 10                                                               % minimum distance between points, nm
+% k   = 30; % 20, 40                                                               % minimum number of neighbors within Eps
+% Eps = 7; % 20, 10                                                               % minimum distance between points, nm
 
 Channel_ID = 12;
 
