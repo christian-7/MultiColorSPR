@@ -208,7 +208,7 @@ function documentation_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-open('https://github.com/christian-7/MultiColorSPR/wiki','-browser');
+web('https://github.com/christian-7/MultiColorSPR/wiki','-browser');
 
 % --------------------------------------------------------------------
 function sample_data_Callback(hObject, eventdata, handles)

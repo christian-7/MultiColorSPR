@@ -22,7 +22,7 @@ function varargout = trainSVM_GUI(varargin)
 
 % Edit the above text to modify the response to help trainSVM
 
-% Last Modified by GUIDE v2.5 29-May-2018 21:03:59
+% Last Modified by GUIDE v2.5 05-Jul-2018 09:09:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -432,5 +432,3 @@ cd(handles.Path_Ch1);
 save(['Predicted_Particles.mat'],'Predicted');
 
 guidata(hObject, handles); % Update handles structure
-
-
