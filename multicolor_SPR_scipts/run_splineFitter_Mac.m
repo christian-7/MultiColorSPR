@@ -3,8 +3,22 @@
 clear, clc, close all
 
 input_folder    = '/Volumes/lebpc4-data12TB/to_analyze/2018-06-05_DNA_Origami/Cy5/image_stacks/Cy5_1_1';
-loc_folder      = '/Volumes/lebpc4-data12TB/to_analyze/2018-06-05_DNA_Origami/locResults';
+output_folder   = '/Volumes/lebpc4-data12TB/to_analyze/2018-06-05_DNA_Origami/locResults';
 variance_map    = '/Volumes/sieben/splineFitter/prime_alice/varOffset.mat'; 
+calib_file      = '/Volumes/sieben/splineFitter/single_bead_3dcal_HTP_647nm.mat'
+path_splineFit  = '/Volumes/sieben/splineFitter/fit3Dcspline';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+addpath(genpath(path_splineFit));
+
+% For Miji on Mac, run this before runnig starting miji
+
+javaaddpath '/Applications/MATLAB_R2016b.app/java/mij.jar';
+javaaddpath '/Applications/MATLAB_R2016b.app/java/mij.jar';
+addpath('/Applications/Fiji.app/scripts');
+
+Miji;
 
 %% Index the input folder
 
@@ -64,45 +78,45 @@ var_map = var_Alice.varOffset(roi(1, 1):roi(1, 1)+roi(3, 1)-1,...
                           
 % save('var_map.mat','var_map');                          
                 
-fprintf('\n -- Variance map selected -- \n');                
+fprintf('\n -- Variance map selected -- \n');  
 
-%% Create input variable for simple_fitter
+%% Loop fitting through the folder
 
-addpath('fit3Dcspline/shared');
-addpath('fit3Dcspline/bfmatlab');
-
-% For Miji on Mac, run this before runnig starting miji
-
-% javaaddpath '/Applications/MATLAB_R2016b.app/java/mij.jar';
-% javaaddpath '/Applications/MATLAB_R2016b.app/java/mij.jar';
-% addpath('/Applications/Fiji.app/scripts');
-
-Miji;
-
-myMiji(true,'ImageJ');
-
-%% Loop the fitting throught the folder
-
-for i = 1:size(image_files,1);
+for i = 1:size(image_files,1); % For all image files in folder
     
-image_name  = image_files(i).name;
-base        = regexp(image_name,'\.','split');
+image_name   = image_files(i).name;
+base         = regexp(image_name,'\.','split');
 
-input_file  = ['path=[' input_folder image_name ']'];
-output_file = [loc_folder '/' base{1} '_Localizations.csv'];
+input_file   = ['path=[' input_folder image_name ']'];
 
-MIJ.run('Open...', input_file);
+info         = imfinfo([input_folder image_name]); % Read stack length
+NbrFrames    = size(info,1);
+frame_matrix = [1,round(NbrFrames/2);round(NbrFrames/2)+1,size(info,1)]; % Generate Matrix of substacks
+
+% Load Substacks and localize 
+
+for j = 1:size(frame_matrix,1);
+    
+range = ['z_begin=' num2str(frame_matrix(j,1)) ' z_end=' num2str(frame_matrix(j,2))];
+
+output_file  = [output_folder '/' base{1} '_Localizations_' num2str(j) '.csv'];
+
+MIJ.run('Bio-Formats Importer', ['open=' file_path 'color_mode=Default rois_import=[ROI manager] specify_range view=[Standard ImageJ] stack_order=Default' range 'z_step=1']);
+
+%%%%
+% 
+% MIJ.run('Open...', input_file);
             
 p                   = {};
 p.imagefile         = '';
-p.calfile           = '';
+p.calfile           = calib_file;
 p.offset            = 100; %in ADU
 p.conversion        = 0.1; % e/ADU
 p.previewframe      = false;
 p.peakfilter        = 1.2;  % filter size (pixel)
 p.peakcutoff        = 5;    % photons
 p.roifit            = 13;   % ROI size (pixel)
-p.bidirectional     = true; % 2D
+p.bidirectional     = false; % 2D
 p.mirror            = false;
 p.status            = '';
 p.outputfile        = output_file;
@@ -112,10 +126,12 @@ p.loader            = 3; % {'simple tif','ome loader','ImageJ'}
 p.mij               = MIJ;
 p.backgroundmode    = 'Difference of Gaussians (fast)';
 p.preview           = false;
-p.isscmos           = false;
-p.scmosfile         = '';
+p.isscmos           = true;
+p.scmosfile         = [input_folder '\var_map.mat'];;
 p.mirror            = false;
             
 % simplefitter_cspline(p)
+
+end
                 
 end
