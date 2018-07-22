@@ -1,24 +1,29 @@
-%% Define input and output folder
+%% Define input and output parameters
 
 clear, clc, close all
 
-input_folder    = 'X:\to_analyze\2018-06-05_DNA_Origami\Cy5\image_stacks\Cy5_1_1';
-output_folder   = 'X:\to_analyze\2018-06-05_DNA_Origami\locResults';
-calib_file      = 'V:\splineFitter\single_bead_3dcal_HTP_647nm.mat'
-variance_map    = 'V:\splineFitter\prime_alice\varOffset.mat';
-path_splineFit  = '/Volumes/sieben/splineFitter/fit3Dcspline';
+input_folder       = 'E:\Shares\lebpc4-data12TB\to_analyze\2018-03-21_humanCent_Cep164_Cep152\Cep152_DL755\image_stacks\Cep152_DL755_5_1';
+output_folder      = 'E:\Shares\lebpc4-data12TB\to_analyze\2018-03-21_humanCent_Cep164_Cep152\locResults\Spline';
+calib_file         = 'T:\splineFitter\single_bead_3dcal_HTP_750nm.mat';
+variance_map       = 'T:\splineFitter\prime_alice\varOffset.mat'; 
+
+path_splineFit     = 'E:\Shares\lebpc4-data12TB\Christian\fit3Dcspline'; % This should be relative to the SPARTAN Path
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-addpath(genpath(path_splineFit)): % Add the fitter to the path
+cd(output_folder);
+mkdir('temp');
+temp_output_folder = [output_folder '\temp'];
+
+addpath(genpath(path_splineFit));
 
 % For Miji on Win, run this before runnig starting miji
 
-javaaddpath 'V:\splineFitter\fit3Dcspline\ImageJ\mij.jar';
-javaaddpath 'V:\splineFitter\fit3Dcspline\ImageJ\ij.jar';
+cd(path_splineFit);
+javaaddpath '\ImageJ\ij.jar';
+javaaddpath '\ImageJ\mij.jar';
 
 myMiji(true,'ImageJ');
-
 
 %% Index the input folder
 
@@ -81,39 +86,35 @@ save([input_folder '\var_map.mat'],'var_map');
                 
 fprintf('\n -- Variance map selected -- \n');                
 
-%% Loop fitting through the folder
+%% Loop the fitting throught the folder
 
-for i = 1:size(image_files,1);
+for i = 1%:size(image_files,1);
     
-image_name   = image_files(i).name;
-base         = regexp(image_name,'\.','split');
+image_name  = image_files(i).name;
+base        = regexp(image_name,'\.','split');
 
-input_file   = ['path=[' input_folder image_name ']'];
+% input_file  = ['path=[' input_folder '\' image_name ']']; % if using normal stack import
+input_file  = ['open=[' input_folder '\' image_name ']'];   % if using virtual stack import
+output_file = [temp_output_folder '\' base{1} '_LocalizationsPC4.csv'];
 
-info         = imfinfo([input_folder image_name]); % Read stack length
-NbrFrames    = size(info,1);
-frame_matrix = [1,round(NbrFrames/2);round(NbrFrames/2)+1,size(info,1)]; % Generate Matrix of substacks
+image_files(i).output = output_file; % Save the output path
 
-% Load Substacks and localize 
+% MIJ.run('Open...', input_file); % Open tiff stack
 
-for j = 1:size(frame_matrix,1);
-    
-range = ['z_begin=' num2str(frame_matrix(j,1)) ' z_end=' num2str(frame_matrix(j,2))];
+MIJ.run('TIFF Virtual Stack...', input_file); % Open virtual tiff stack
 
-output_file  = [output_folder '\' base{1} '_Localizations_' num2str(j) '.csv'];
-
-MIJ.run('Bio-Formats Importer', ['open=' file_path 'color_mode=Default rois_import=[ROI manager] specify_range view=[Standard ImageJ] stack_order=Default' range 'z_step=1']);
+tic
 
 p                   = {};
 p.imagefile         = '';
 p.calfile           = calib_file;
-p.offset            = 163.65; % in ADU
-p.conversion        = 0.1;    % e/ADU
+p.offset            = 163.65;  % in ADU
+p.conversion        = 0.48;    % e/ADU
 p.previewframe      = false;
-p.peakfilter        = 1.2;    % filter size (pixel)
-p.peakcutoff        = 5;      % photons
-p.roifit            = 15;     % ROI size (pixel)
-p.bidirectional     = false;  % 2D
+p.peakfilter        = 1.2;  % filter size (pixel)
+p.peakcutoff        = 5;    % photons
+p.roifit            = 15;   % ROI size (pixel)
+p.bidirectional     = false; % 2D
 p.mirror            = false;
 p.status            = '';
 p.outputfile        = output_file;
@@ -127,14 +128,41 @@ p.isscmos           = true;
 p.scmosfile         = [input_folder '\var_map.mat'];
 p.mirror            = false;
 
-
 fprintf('\n -- Starting localization ...  \n'); 
 
-simplefitter_cspline(p)
+simplefitter_cspline(p);
 
-end  
+fprintf(['\n -- Finished processing substack ' num2str(i) ' of ' num2str(size(image_files,1)) ' in ' num2str(toc/60) ' min -- \n']); 
 
-fprintf(['\n -- Finished processing substack ' num2str(i) ' of ' num2str(size(image_files,1)) ' in ' num2str(toc)/60 ' min -- \n']); 
-
+MIJ.run('Close All');
 
 end
+
+%% Combine files and save as single localization file
+
+cd(temp_output_folder); all_locs = [];
+
+% Load Header
+
+file = fopen(image_files(1).output);
+line = fgetl(file);
+h = regexp( line, ',', 'split' );
+
+for i = 1:size(image_files,1);
+
+    locs     = [];
+    locs     = dlmread(image_files(i).output,',',1,0);
+    all_locs = vertcat(all_locs,locs);
+    
+end
+
+delete .csv
+new_name_temp   = regexp(base{1},'_','split');
+new_name        = [new_name_temp{1,1} '_' new_name_temp{1,2} '_' new_name_temp{1,3} '_Localizations.csv'];
+
+cd(output_folder);
+
+fileID = fopen([base{1} '_Localizations.csv'],'w');
+fprintf(fileID,[[line] ' \n']);
+dlmwrite([base{1} '_Localizations.csv'],all_locs,'-append');
+fclose('all');
