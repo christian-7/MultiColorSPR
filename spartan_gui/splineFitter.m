@@ -22,7 +22,7 @@ function varargout = splineFitter(varargin)
 
 % Edit the above text to modify the response to help splineFitter
 
-% Last Modified by GUIDE v2.5 24-Jul-2018 10:48:20
+% Last Modified by GUIDE v2.5 24-Jul-2018 20:58:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,7 +58,7 @@ handles.output = hObject;
 
 % Store the default parameters 
 
-handles.conversion = 0.48
+handles.conversion = 0.48;
 handles.offset     = 163.65;
 handles.filter     = 1.2;
 handles.cutoff     = 5;
@@ -529,5 +529,3 @@ textLabel = sprintf('Initialized');
 set(handles.statusText, 'String', textLabel);
 
 guidata(hObject, handles); % Update handles structure
-
-
