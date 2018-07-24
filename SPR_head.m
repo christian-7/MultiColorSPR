@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 30-May-2018 08:27:34
+% Last Modified by GUIDE v2.5 24-Jul-2018 09:29:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -322,7 +322,9 @@ Scipion_2C;
 
 
 % --------------------------------------------------------------------
-function Untitled_21_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_21 (see GCBO)
+function locSpline_Callback(hObject, eventdata, handles)
+% hObject    handle to locSpline (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+splineFitter;

@@ -1,4 +1,5 @@
 function varargout = basicGUI(varargin)
+
 % BASICGUI MATLAB code for basicGUI.fig
 %      BASICGUI, by itself, creates a new BASICGUI or raises the existing
 %      singleton*.

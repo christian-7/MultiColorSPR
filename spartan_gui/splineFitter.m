@@ -22,7 +22,7 @@ function varargout = splineFitter(varargin)
 
 % Edit the above text to modify the response to help splineFitter
 
-% Last Modified by GUIDE v2.5 22-Jul-2018 21:54:34
+% Last Modified by GUIDE v2.5 24-Jul-2018 10:48:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,6 +54,18 @@ function splineFitter_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for splineFitter
 handles.output = hObject;
+
+
+% Store the default parameters 
+
+handles.conversion = 0.48
+handles.offset     = 163.65;
+handles.filter     = 1.2;
+handles.cutoff     = 5;
+handles.ROIsize    = 15;
+handles.pxl_size   = 106;
+
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -166,18 +178,24 @@ end
 
 
 
-function edit8_Callback(hObject, eventdata, handles)
-% hObject    handle to edit8 (see GCBO)
+function cutoff_Callback(hObject, eventdata, handles)
+% hObject    handle to cutoff (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit8 as text
-%        str2double(get(hObject,'String')) returns contents of edit8 as a double
+% Hints: get(hObject,'String') returns contents of cutoff as text
+%        str2double(get(hObject,'String')) returns contents of cutoff as a double
+
+handles = guidata(hObject);
+
+handles.cutoff = str2double(get(hObject,'String'))
+
+guidata(hObject, handles); % Update handles structure
 
 
 % --- Executes during object creation, after setting all properties.
-function edit8_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit8 (see GCBO)
+function cutoff_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to cutoff (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -189,18 +207,24 @@ end
 
 
 
-function edit6_Callback(hObject, eventdata, handles)
-% hObject    handle to edit6 (see GCBO)
+function ROIsize_Callback(hObject, eventdata, handles)
+% hObject    handle to ROIsize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit6 as text
-%        str2double(get(hObject,'String')) returns contents of edit6 as a double
+% Hints: get(hObject,'String') returns contents of ROIsize as text
+%        str2double(get(hObject,'String')) returns contents of ROIsize as a double
+
+handles = guidata(hObject);
+
+handles.ROI_size = str2double(get(hObject,'String'))
+
+guidata(hObject, handles); % Update handles structure
 
 
 % --- Executes during object creation, after setting all properties.
-function edit6_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit6 (see GCBO)
+function ROIsize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ROIsize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -212,18 +236,24 @@ end
 
 
 
-function edit7_Callback(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
+function pxl_size_Callback(hObject, eventdata, handles)
+% hObject    handle to pxl_size (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit7 as text
-%        str2double(get(hObject,'String')) returns contents of edit7 as a double
+% Hints: get(hObject,'String') returns contents of pxl_size as text
+%        str2double(get(hObject,'String')) returns contents of pxl_size as a double
+
+handles = guidata(hObject);
+
+handles.pxl_size = str2double(get(hObject,'String'))
+
+guidata(hObject, handles); % Update handles structure
 
 
 % --- Executes during object creation, after setting all properties.
-function edit7_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit7 (see GCBO)
+function pxl_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pxl_size (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -235,18 +265,24 @@ end
 
 
 
-function edit5_Callback(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
+function offset_Callback(hObject, eventdata, handles)
+% hObject    handle to offset (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit5 as text
-%        str2double(get(hObject,'String')) returns contents of edit5 as a double
+% Hints: get(hObject,'String') returns contents of offset as text
+%        str2double(get(hObject,'String')) returns contents of offset as a double
+
+handles = guidata(hObject);
+
+handles.offset = str2double(get(hObject,'String'))
+
+guidata(hObject, handles); % Update handles structure
 
 
 % --- Executes during object creation, after setting all properties.
-function edit5_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit5 (see GCBO)
+function offset_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to offset (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -258,18 +294,18 @@ end
 
 
 
-function edit9_Callback(hObject, eventdata, handles)
-% hObject    handle to edit9 (see GCBO)
+function filtersize_Callback(hObject, eventdata, handles)
+% hObject    handle to filtersize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit9 as text
-%        str2double(get(hObject,'String')) returns contents of edit9 as a double
+% Hints: get(hObject,'String') returns contents of filtersize as text
+%        str2double(get(hObject,'String')) returns contents of filtersize as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit9_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit9 (see GCBO)
+function filtersize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filtersize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -280,47 +316,100 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
+% --- Executes on button press in inputPath.
+function inputPath_Callback(hObject, eventdata, handles)
+% hObject    handle to inputPath (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
 
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton2 (see GCBO)
+handles.inputPath = uigetdir;
+
+set(handles.statusText, 'String', ['Input Path = ' handles.inputPath]);
+
+guidata(hObject, handles);
+
+% --- Executes on button press in outputPath.
+function outputPath_Callback(hObject, eventdata, handles)
+% hObject    handle to outputPath (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
 
-% --- Executes on button press in pushbutton3.
-function pushbutton3_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton3 (see GCBO)
+handles.outputPath = uigetdir;
+
+set(handles.statusText, 'String', ['Output Path = ' handles.outputPath]);
+
+guidata(hObject, handles);
+
+% --- Executes on button press in calibPath.
+function calibPath_Callback(hObject, eventdata, handles)
+% hObject    handle to calibPath (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
 
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton4 (see GCBO)
+[file,path] = uigetfile('*.mat');
+if isequal(file,0)
+   disp('User selected Cancel');
+else
+   disp(['User selected Calibration File', fullfile(path,file)]);
+end
+
+handles.calibFile = fullfile(path,file);
+
+set(handles.statusText, 'String', ['User selected Calibration File = ' fullfile(path,file)]);
+
+guidata(hObject, handles);
+
+
+% --- Executes on button press in VarmapPath.
+function VarmapPath_Callback(hObject, eventdata, handles)
+% hObject    handle to VarmapPath (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
+
+[file,path] = uigetfile('*.mat');
+
+if isequal(file,0)
+   disp('User selected Cancel');
+else
+   disp(['User selected Variance Map', fullfile(path,file)]);
+end
+
+handles.Varmap = load(fullfile(path,file));
+
+set(handles.statusText, 'String', ['User selected Variance Map = ' fullfile(path,file)]);
 
 
-function edit10_Callback(hObject, eventdata, handles)
-% hObject    handle to edit10 (see GCBO)
+guidata(hObject, handles);
+
+
+
+function conversion_Callback(hObject, eventdata, handles)
+% hObject    handle to conversion (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit10 as text
-%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+% Hints: get(hObject,'String') returns contents of conversion as text
+%        str2double(get(hObject,'String')) returns contents of conversion as a double
+
+handles = guidata(hObject);
+
+handles.conversion = str2double(get(hObject,'String'))
+
+guidata(hObject, handles); % Update handles structure
+
 
 
 % --- Executes during object creation, after setting all properties.
-function edit10_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit10 (see GCBO)
+function conversion_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to conversion (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -331,8 +420,114 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton9.
-function pushbutton9_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton9 (see GCBO)
+% --- Executes on button press in startLoc.
+function startLoc_Callback(hObject, eventdata, handles)
+% hObject    handle to startLoc (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+handles
+for i = 1%:size(image_files,1);
+    
+image_name  = handles.image_files(i).name;
+base        = regexp(image_name,'\.','split');
+
+% input_file  = ['path=[' input_folder '\' image_name ']']; % if using normal stack import
+input_file  = ['open=[' handles.inputPath '\' image_name ']'];   % if using virtual stack import
+output_file = [handles.temp_folder '\' base{1} '_LocalizationsPC4.csv'];
+
+image_files(i).output = output_file; % Save the output path
+
+% MIJ.run('Open...', input_file); % Open tiff stack
+
+MIJ.run('TIFF Virtual Stack...', input_file); % Open virtual tiff stack
+
+tic
+
+p                   = {};
+p.imagefile         = '';
+p.calfile           = handles.calibFile;
+p.offset            = handles.offset;  % in ADU
+p.conversion        = handles.conversion;    % e/ADU
+p.previewframe      = false;
+p.peakfilter        = handles.filter;  % filter size (pixel)
+p.peakcutoff        = handles.cutoff;    % photons
+p.roifit            = handles.ROIsize;   % ROI size (pixel)
+p.bidirectional     = false; % 2D
+p.mirror            = false;
+p.status            = '';
+p.outputfile        = output_file;
+p.outputformat      = 'csv';
+p.pixelsize         = handles.pxl_size;
+p.loader            = 3; % {'simple tif','ome loader','ImageJ'}
+p.mij               = MIJ;
+p.backgroundmode    = 'Difference of Gaussians (fast)';
+p.preview           = false;
+p.isscmos           = false;
+p.scmosfile         = handles.var_map;
+p.mirror            = false;
+
+textLabel = sprintf('Starting localization ...');
+set(handles.statusText, 'String', textLabel);
+
+simplefitter_cspline(p);
+
+textLabel = sprintf(['\n -- Finished processing substack ' num2str(i) ' of ' num2str(size(image_files,1)) ' in ' num2str(toc/60) ' min -- \n']);
+set(handles.statusText, 'String', textLabel);
+
+
+MIJ.run('Close All');
+
+end
+
+% Combine files and save as single localization file
+
+cd(handles.temp_folder); all_locs = [];
+
+% Load Header
+
+file = fopen(image_files(1).output);
+line = fgetl(file);
+h    = regexp( line, ',', 'split' );
+
+for i = 1:size(image_files,1);
+
+    locs     = [];
+    locs     = dlmread(image_files(i).output,',',1,0);
+    all_locs = vertcat(all_locs,locs);
+    
+end
+
+delete .csv
+new_name_temp   = regexp(base{1},'_','split');
+new_name        = [new_name_temp{1,1} '_' new_name_temp{1,2} '_' new_name_temp{1,3} '_Localizations.csv'];
+
+cd(output_folder);
+
+fileID = fopen([base{1} '_Localizations.csv'],'w');
+fprintf(fileID,[[line] ' \n']);
+dlmwrite([base{1} '_Localizations.csv'],all_locs,'-append');
+fclose('all');
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes on button press in initSpline.
+function initSpline_Callback(hObject, eventdata, handles)
+
+% hObject    handle to initSpline (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+[handles.var_map,handles.image_files,handles.temp_folder] = initializeSpline(handles.outputPath,handles.inputPath,handles.Varmap.varOffset);
+
+textLabel = sprintf('Initialized');
+set(handles.statusText, 'String', textLabel);
+
+guidata(hObject, handles); % Update handles structure
+
+
