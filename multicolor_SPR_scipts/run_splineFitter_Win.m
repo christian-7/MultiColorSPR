@@ -2,12 +2,11 @@
 
 clear, clc, close all
 
-input_folder       = 'E:\Shares\lebpc4-data12TB\to_analyze\2018-03-21_humanCent_Cep164_Cep152\Cep152_DL755\image_stacks\Cep152_DL755_5_1';
+input_folder       = 'E:\Shares\lebpc4-data12TB\to_analyze\2018-03-21_humanCent_Cep164_Cep152\Cep152_DL755\image_stacks\Cep152_DL755_4_1';
 output_folder      = 'E:\Shares\lebpc4-data12TB\to_analyze\2018-03-21_humanCent_Cep164_Cep152\locResults\Spline';
 calib_file         = 'T:\splineFitter\single_bead_3dcal_HTP_750nm.mat';
 variance_map       = 'T:\splineFitter\prime_alice\varOffset.mat'; 
-
-path_splineFit     = 'E:\Shares\lebpc4-data12TB\Christian\fit3Dcspline'; % This should be relative to the SPARTAN Path
+path_splineFit     = 'E:\Shares\lebpc4-data12TB\Christian\fit3Dcspline';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -18,8 +17,8 @@ temp_output_folder = [output_folder '\temp'];
 addpath(genpath(path_splineFit));
 
 % For Miji on Win, run this before runnig starting miji
-
 cd(path_splineFit);
+
 javaaddpath '\ImageJ\ij.jar';
 javaaddpath '\ImageJ\mij.jar';
 
@@ -87,8 +86,8 @@ save([input_folder '\var_map.mat'],'var_map');
 fprintf('\n -- Variance map selected -- \n');                
 
 %% Loop the fitting throught the folder
-
-for i = 1%:size(image_files,1);
+tic
+for i = 1:size(image_files,1);
     
 image_name  = image_files(i).name;
 base        = regexp(image_name,'\.','split');
@@ -103,12 +102,12 @@ image_files(i).output = output_file; % Save the output path
 
 MIJ.run('TIFF Virtual Stack...', input_file); % Open virtual tiff stack
 
-tic
+% tic
 
 p                   = {};
 p.imagefile         = '';
 p.calfile           = calib_file;
-p.offset            = 163.65;  % in ADU
+p.offset            = 163.65; % in ADU
 p.conversion        = 0.48;    % e/ADU
 p.previewframe      = false;
 p.peakfilter        = 1.2;  % filter size (pixel)
@@ -132,21 +131,24 @@ fprintf('\n -- Starting localization ...  \n');
 
 simplefitter_cspline(p);
 
-fprintf(['\n -- Finished processing substack ' num2str(i) ' of ' num2str(size(image_files,1)) ' in ' num2str(toc/60) ' min -- \n']); 
+% fprintf(['\n -- Finished processing substack ' num2str(i) ' of ' num2str(size(image_files,1)) ' in ' num2str(toc/60) ' min -- \n']); 
 
 MIJ.run('Close All');
 
 end
 
+toc
 %% Combine files and save as single localization file
 
-cd(temp_output_folder); all_locs = [];
+cd(temp_output_folder); all_locs = [];frames = [];
 
 % Load Header
 
-file = fopen(image_files(1).output);
-line = fgetl(file);
-h = regexp( line, ',', 'split' );
+file      = fopen(image_files(1).output);
+line      = fgetl(file);
+h         = regexp( line, ',', 'split' );
+frameCol  =  strmatch('frame',h);
+fclose('all');
 
 for i = 1:size(image_files,1);
 
@@ -154,15 +156,29 @@ for i = 1:size(image_files,1);
     locs     = dlmread(image_files(i).output,',',1,0);
     all_locs = vertcat(all_locs,locs);
     
+    if isempty(frames)==1;
+    
+        frames   = vertcat(frames,locs(:,frameCol));
+    else
+        
+        frames   = vertcat(frames,locs(:,frameCol)+max(frames));
+    
+    end
+    
+    clc
+    fprintf(['\n -- Processed locfile ' num2str(i) ' of ' num2str(size(image_files,1)) '-- \n']); 
+    
 end
 
-delete .csv
+all_locs(:,frameCol) = frames;
+
+delete *.csv
 new_name_temp   = regexp(base{1},'_','split');
-new_name        = [new_name_temp{1,1} '_' new_name_temp{1,2} '_' new_name_temp{1,3} '_Localizations.csv'];
+new_name        = [new_name_temp{1,1} '_' new_name_temp{1,2} '_' new_name_temp{1,3} '_Localizations2.csv'];
 
 cd(output_folder);
 
-fileID = fopen([base{1} '_Localizations.csv'],'w');
+fileID = fopen(new_name,'w');
 fprintf(fileID,[[line] ' \n']);
-dlmwrite([base{1} '_Localizations.csv'],all_locs,'-append');
+dlmwrite(new_name,all_locs,'-append');
 fclose('all');
