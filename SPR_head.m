@@ -22,7 +22,7 @@ function varargout = SPR_head(varargin)
 
 % Edit the above text to modify the response to help SPR_head
 
-% Last Modified by GUIDE v2.5 24-Jul-2018 09:29:29
+% Last Modified by GUIDE v2.5 04-Aug-2018 22:27:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -328,3 +328,12 @@ function locSpline_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 splineFitter;
+
+
+% --------------------------------------------------------------------
+function Viewer_Callback(hObject, eventdata, handles)
+% hObject    handle to Viewer (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+locs_viewer;

@@ -22,7 +22,7 @@ function varargout = locs_viewer(varargin)
 
 % Edit the above text to modify the response to help locs_viewer
 
-% Last Modified by GUIDE v2.5 03-Aug-2018 21:37:02
+% Last Modified by GUIDE v2.5 04-Aug-2018 22:27:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,8 +59,15 @@ handles.output = hObject;
 handles.pxlsize     = 106;
 handles.binsize     = 15;
 handles.imsize      = 512;
-handles.segparam    = 500;
-
+handles.segpara     = 500;
+handles.format      = 'ThunderStorm';
+handles.pxlsizeVis  = 10;
+handles.locsFilt    = [];
+handles.locsDC      = [];
+handles.filtSig     = [50,250];
+handles.filtPhot    = 500;
+handles.filtUnc     = 25;
+handles.filtFrame   = 100;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -92,7 +99,7 @@ function inputFormat_Callback(hObject, eventdata, handles)
 handles.output = hObject;
 contents = cellstr(get(hObject,'String'));
 handles.format = contents{get(hObject,'Value')};
-handles.format
+fprintf(['\n ' handles.format ' format selected \n']);
 guidata(hObject, handles);
 
 
@@ -121,7 +128,7 @@ function loadLocs_Callback(hObject, eventdata, handles)
     
     % Read the selected file into the variable
     
-    disp('Reading Localization file ...');
+    fprintf('\n -- Reading Localization file, please wait ... -- \n ');
     
     [path,Name_Ch1,ext_Ch1] = fileparts(FileName_Ch1);
     
@@ -137,13 +144,16 @@ function loadLocs_Callback(hObject, eventdata, handles)
     
     file         = fopen([Name_Ch1 ext_Ch1]);
     handles.line = fgetl(file);
-    h            = regexp(handles.line, ',', 'split' );
+    header            = regexp(handles.line, ',', 'split' );
     
-    if contains(string,'Thunder')==1;
+    if contains(handles.format,'Thunder')==1;
 
-    handles.xCol      = strmatch('x [nm]',h);
-    handles.yCol      = strmatch('y [nm]',h);
-    handles.framesCol  = strmatch('frame',h);
+    handles.xCol            = strmatch('"x [nm]"',header);
+    handles.yCol            = strmatch('"y [nm]"',header);
+    handles.framesCol       = strmatch('"frame"',header);
+    handles.sigmaCol        = strmatch('"sigma [nm]"',header);
+    handles.uncertaintyCol  = strmatch('"uncertainty_xy [nm]"',header);
+    handles.photonsCol      = strmatch('"intensity [photon]"',header);
     
     else 
      
@@ -154,13 +164,15 @@ handles.LLCol           = strmatch('logLikelyhood',header);
 handles.photonsCol      = strmatch('photons',header);
     end   
 
-    if isempty(handles.locs_Ch1)==0;
+    if isempty(handles.locs)==0;
     
-    set(handles.openLocCh1,'BackgroundColor','green');
+    set(handles.loadLocs,'BackgroundColor','green');
+    
+    set(handles.locCount, 'String', [num2str(length(handles.locs)) ' localizations ']);
     
     else end
     
-    disp('Localization file loaded');
+    fprintf('\n -- Localization file loaded -- \n');
 
     guidata(hObject, handles); % Update handles structure
 
@@ -274,19 +286,87 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton4 (see GCBO)
+% --- Executes on button press in showFilter.
+function showFilter_Callback(hObject, eventdata, handles)
+% hObject    handle to showFilter (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
 
-% --- Executes on button press in pushbutton5.
-function pushbutton5_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton5 (see GCBO)
+if isempty(handles.locsDC)==1;
+   
+     locs = handles.locs;
+    
+else locs = handles.locsDC;
+
+end
+
+figure('Position',[200 200 1000 300],'Name','Filter parameters');
+
+subplot(1,3,1);
+bins = [0:20:500];
+h = hist(locs(:,handles.sigmaCol),bins);
+bar(bins,h/sum(h)); 
+title(['Median = ' num2str(median(locs(:,handles.sigmaCol)))]);
+xlabel('sigma (nm)');
+ylabel('norm. counts');
+axis square; box on;
+axis([0 500 0 max(h/sum(h))]);
+
+subplot(1,3,2);
+bins = [0:2:50];
+h = hist(locs(:,handles.uncertaintyCol),bins);
+bar(bins,h/sum(h)); 
+title(['Median = ' num2str(median(locs(:,handles.uncertaintyCol)))]);
+xlabel('uncertainty (nm)');
+ylabel('norm. counts');
+axis square; box on;
+axis([0 50 0 max(h/sum(h))]);
+
+subplot(1,3,3);
+bins = [0:5e2:1e4];
+h = hist(locs(:,handles.photonsCol),bins);
+bar(bins,h/sum(h)); 
+title(['Median = ' num2str(median(locs(:,handles.photonsCol)))]);
+xlabel('photons (nm)');
+ylabel('norm. counts');
+axis square; box on;
+axis([0 1e4 0 max(h/sum(h))]);
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on button press in filterLocs.
+function filterLocs_Callback(hObject, eventdata, handles)
+% hObject    handle to filterLocs (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
+
+if   isempty(handles.locsDC)==1;
+   
+     locs = handles.locs;
+    
+else locs = handles.locsDC;
+
+end
+
+filter              = [];
+filter              = find(locs(:,handles.photonsCol) > handles.filtPhot & ... 
+                           locs(:,handles.uncertaintyCol) < handles.filtUnc & ... 
+                           locs(:,handles.framesCol) > handles.filtUnc & ... 
+                           locs(:,handles.sigmaCol) > handles.filtSig(1,1) & ... 
+                           locs(:,handles.sigmaCol) < handles.filtSig(1,2));
+                       
+locsFilt            = locs(filter,1:end);
+
+set(handles.locCount, 'String', ['Localizations filtered (' num2str(length(locsFilt)/length(locs)) ' left)']);
+
+handles.locsFilt = locsFilt;
+
+guidata(hObject, handles); % Update handles structure
 
 % --- Executes on button press in startRCC.
 function startRCC_Callback(hObject, eventdata, handles)
@@ -294,13 +374,16 @@ function startRCC_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles = guidata(hObject);
+
+coords = [];
 coords(:,1) = handles.locs(:,handles.xCol)/handles.pxlsize;
 coords(:,2) = handles.locs(:,handles.yCol)/handles.pxlsize;
 coords(:,3) = handles.locs(:,handles.framesCol);
 
 fprintf('\n -- Starting RCC ... \n');
 
-[coordscorr, finaldrift] = RCC(coords, handles.segpara, handles.imsize, handles.pixelsize, handles.binsize, 0.2);
+[coordscorr, finaldrift] = RCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize, 0.2);
 
 figure('Position',[100 100 900 400])
 subplot(2,1,1)
@@ -310,6 +393,267 @@ subplot(2,1,2)
 plot(finaldrift(:,2))
 title('y Drift')
 
-locsDC = handles.locs;
-locsDC(:,xCol) = coordscorr(:,1);
-locsDC(:,yCol) = coordscorr(:,2);
+handles.locsDC = handles.locs;
+handles.locsDC(:,handles.xCol) = coordscorr(:,1) * handles.pxlsize;
+handles.locsDC(:,handles.yCol) = coordscorr(:,2) * handles.pxlsize;
+
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+function pxlsizeVis_Callback(hObject, eventdata, handles)
+% hObject    handle to pxlsizeVis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of pxlsizeVis as text
+%        str2double(get(hObject,'String')) returns contents of pxlsizeVis as a double
+
+handles = guidata(hObject);
+handles.pxlsizeVis = str2double(get(hObject,'String'));
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function pxlsizeVis_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pxlsizeVis (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in Visualize.
+function Visualize_Callback(hObject, eventdata, handles)
+% hObject    handle to Visualize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+if isempty(handles.locsFilt)==1;
+
+heigth = round((max(handles.locsDC(:,handles.yCol)) - min((handles.locsDC(:,handles.yCol))))/handles.pxlsizeVis);
+width  = round((max(handles.locsDC(:,handles.xCol)) - min((handles.locsDC(:,handles.xCol))))/handles.pxlsizeVis);
+        
+rendered = hist3([handles.locsDC(:,handles.yCol),handles.locsDC(:,handles.xCol)],[heigth width]);
+
+else 
+ 
+heigth = round((max(handles.locsFilt(:,handles.yCol)) - min((handles.locsFilt(:,handles.yCol))))/handles.pxlsizeVis);
+width  = round((max(handles.locsFilt(:,handles.xCol)) - min((handles.locsFilt(:,handles.xCol))))/handles.pxlsizeVis);
+        
+rendered = hist3([handles.locsFilt(:,handles.yCol),handles.locsFilt(:,handles.xCol)],[heigth width]);
+
+end
+
+handles.rendered = imgaussfilt(rendered,1);
+
+figure('Position',[300 300 500 500],'Name','Gaussian blurred localizations') 
+imshow(imgaussfilt(rendered,1));
+colormap hot
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes on button press in saveIM.
+function saveIM_Callback(hObject, eventdata, handles)
+% hObject    handle to saveIM (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+selpath = uigetdir(handles.Path_Ch1,'Select Save Path');
+
+cd(selpath);
+
+
+I32 = [];
+I32 = uint32(handles.rendered);
+
+t = Tiff([handles.Name_Ch1 '_DC.tiff'],'w');
+tagstruct.ImageLength     = size(I32,1);
+tagstruct.ImageWidth      = size(I32,2);
+tagstruct.Photometric     = Tiff.Photometric.MinIsBlack;
+tagstruct.BitsPerSample   = 32;
+tagstruct.SamplesPerPixel = 1;
+tagstruct.RowsPerStrip    = 16;
+tagstruct.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
+tagstruct.Software        = 'MATLAB';
+t.setTag(tagstruct)
+
+t.write(I32);
+t.close()
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+function filtFrame_Callback(hObject, eventdata, handles)
+% hObject    handle to filtFrame (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of filtFrame as text
+%        str2double(get(hObject,'String')) returns contents of filtFrame as a double
+
+
+handles = guidata(hObject);
+handles.filtFrame = str2double(get(hObject,'String'));
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes during object creation, after setting all properties.
+function filtFrame_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filtFrame (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function filtSigma_Callback(hObject, eventdata, handles)
+% hObject    handle to filtSigma (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of filtSigma as text
+%        str2double(get(hObject,'String')) returns contents of filtSigma as a double
+
+handles = guidata(hObject);
+
+string = get(hObject,'String');
+handles.filtSig = str2double(regexp(string,',', 'split'));
+
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function filtSigma_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filtSigma (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function filtUnc_Callback(hObject, eventdata, handles)
+% hObject    handle to filtUnc (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of filtUnc as text
+%        str2double(get(hObject,'String')) returns contents of filtUnc as a double
+
+handles = guidata(hObject);
+handles.filtUnc = str2double(get(hObject,'String'));
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function filtUnc_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filtUnc (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function filtPhot_Callback(hObject, eventdata, handles)
+% hObject    handle to filtPhot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of filtPhot as text
+%        str2double(get(hObject,'String')) returns contents of filtPhot as a double
+
+handles = guidata(hObject);
+handles.filtPhot = str2double(get(hObject,'String'));
+guidata(hObject, handles); % Update handles structure
+
+
+
+% --- Executes during object creation, after setting all properties.
+function filtPhot_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filtPhot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in undoFilt.
+function undoFilt_Callback(hObject, eventdata, handles)
+% hObject    handle to undoFilt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+set(handles.locCount, 'String', ['Filter removed (' num2str(length(handles.locs)) ' localizations left)']);
+
+set(handles.locCount, 'String', [num2str(length(handles.locs)) ' localizations ']);
+
+handles.locsFilt = [];
+
+guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on button press in saveLocs.
+function saveLocs_Callback(hObject, eventdata, handles)
+% hObject    handle to saveLocs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles = guidata(hObject);
+
+if isempty(handles.locsFilt);
+   
+    locsToSave = handles.locsDC;
+    savename = [handles.Name_Ch1 '_DC.csv'];
+
+else
+    
+    locsToSave = handles.locsFilt;
+    savename = [handles.Name_Ch1 '_filt.csv'];
+    
+
+end
+
+cd(Path_Ch1);
+
+fileID = fopen(savename,'w');
+fprintf(fileID,[[handles.line] ' \n']);
+dlmwrite(savename,locsToSave,'-append');
+fclose('all');
+
+guidata(hObject, handles); % Update handles structure
