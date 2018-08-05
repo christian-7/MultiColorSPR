@@ -1,6 +1,6 @@
 clear, clc, close all
 
-path     = 'W:\splineFitter\test_data';
+path     = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data';
 filename = 'MT_test_noDrift.csv';
 
 cd(path)
@@ -10,16 +10,22 @@ file = fopen(filename);
 line = fgetl(file);
 header1 = regexp( line, ',', 'split' );
 
-xCol            = strmatch('x_pix',header1);
-yCol            = strmatch('x_pix',header1);
-framesCol       = strmatch('frame',header1);
+xCol            = strmatch('"x [nm]"',header1);
+yCol            = strmatch('"y [nm]"',header1);
+framesCol       = strmatch('"frame"',header1);
 
 fprintf(' -- Data Loaded -- ')
+
+drift_x = transpose(linspace(0,1e3,length(locs)));
+drift_y = transpose(linspace(0,-2e3,length(locs)));
+
+locs(:,xCol) = locs(:,xCol)+(drift_x*pixelsize);
+locs(:,yCol) = locs(:,yCol)+(drift_y*pixelsize);
 
 %% Add drft to test data
 
 
-drift_x = transpose(linspace(0,4,length(coords)));
+drift_x = transpose(linspace(0,4,length(coords))); % drift in pxl
 drift_y = transpose(linspace(0,-2,length(coords)));
 
 coords = [];
@@ -31,7 +37,7 @@ coords(:,3) = locs(:,framesCol);
 %% 
 
 clc
-cd('W:\splineFitter\RCC')
+% cd('W:\splineFitter\RCC')
 
 coords(:,1) = locs(:,xCol);
 coords(:,2) = locs(:,yCol);
@@ -93,6 +99,12 @@ TSfileout(:, 1) = coordscorr(:, 3);
 TSfileout(:, 2:3) = coordscorr(:, 1:2) * pixelsize;
 dlmwrite(TSpathout, TSfileout, '-append', 'delimiter', ',');
 
+%% 
+
+fileID = fopen('MT_test_wDrift.csv','w');
+fprintf(fileID,[line ' \n']);
+dlmwrite('MT_test_wDrift.csv',locs,'-append');
+fclose('all');
 
 
 

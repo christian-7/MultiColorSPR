@@ -385,17 +385,26 @@ fprintf('\n -- Starting RCC ... \n');
 
 [coordscorr, finaldrift] = RCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize, 0.2);
 
-figure('Position',[100 100 900 400])
+figure('Position',[100 100 600 400],'Name', 'RCC dirft correction');
 subplot(2,1,1)
-plot(finaldrift(:,1))
+plot(finaldrift(:,1)*handles.pxlsize)
 title('x Drift')
+xlabel('frame');
+ylabel('drift (nm)');
+
 subplot(2,1,2)
-plot(finaldrift(:,2))
-title('y Drift')
+plot(finaldrift(:,2)*handles.pxlsize)
+title('y Drift');
+xlabel('frame');
+ylabel('drift (nm)');
 
 handles.locsDC = handles.locs;
 handles.locsDC(:,handles.xCol) = coordscorr(:,1) * handles.pxlsize;
 handles.locsDC(:,handles.yCol) = coordscorr(:,2) * handles.pxlsize;
+
+figure
+scatter(coordscorr(:,1),coordscorr(:,2),'.');
+scatter(handles.locsDC(:,handles.xCol),handles.locsDC(:,handles.yCol),'.');
 
 
 guidata(hObject, handles); % Update handles structure
@@ -457,7 +466,7 @@ handles.rendered = imgaussfilt(rendered,1);
 
 figure('Position',[300 300 500 500],'Name','Gaussian blurred localizations') 
 imshow(imgaussfilt(rendered,1));
-colormap hot
+colormap(gca,'hot')
 
 guidata(hObject, handles); % Update handles structure
 
