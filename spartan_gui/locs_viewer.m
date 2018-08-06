@@ -152,7 +152,7 @@ function loadLocs_Callback(hObject, eventdata, handles)
     handles.yCol            = strmatch('"y [nm]"',header);
     handles.framesCol       = strmatch('"frame"',header);
     handles.sigmaCol        = strmatch('"sigma [nm]"',header);
-    handles.uncertaintyCol  = strmatch('"uncertainty_xy [nm]"',header);
+    handles.uncertaintyCol  = strmatch('"uncertainty [nm]"',header);
     handles.photonsCol      = strmatch('"intensity [photon]"',header);
     
     else 
@@ -313,6 +313,8 @@ xlabel('sigma (nm)');
 ylabel('norm. counts');
 axis square; box on;
 axis([0 500 0 max(h/sum(h))]);
+
+handles.uncertaintyCol
 
 subplot(1,3,2);
 bins = [0:2:50];
