@@ -1,7 +1,8 @@
 clear, clc, close all
 
-path     = '/Users/christian/Documents/Arbeit/MatLab/SPARTAN_gui/example_data';
-filename = 'MT_test_noDrift.csv';
+path     = '/Volumes/sieben/splineFitter/test_data';
+filename = '2016-12-09_Cos7_aTub_PAINT_FOV_2_MMStack_Pos0_locResults.csv';
+pixelsize 	= 106;
 
 cd(path)
 locs = dlmread(filename, ',',1,0);
@@ -16,11 +17,11 @@ framesCol       = strmatch('"frame"',header1);
 
 fprintf(' -- Data Loaded -- ')
 
-drift_x = transpose(linspace(0,1e3,length(locs)));
-drift_y = transpose(linspace(0,-2e3,length(locs)));
-
-locs(:,xCol) = locs(:,xCol)+(drift_x*pixelsize);
-locs(:,yCol) = locs(:,yCol)+(drift_y*pixelsize);
+% drift_x = transpose(linspace(0,1e3,length(locs)));
+% drift_y = transpose(linspace(0,-2e3,length(locs)));
+% 
+% locs(:,xCol) = locs(:,xCol)+(drift_x*pixelsize);
+% locs(:,yCol) = locs(:,yCol)+(drift_y*pixelsize);
 
 %% Add drft to test data
 
@@ -39,8 +40,8 @@ coords(:,3) = locs(:,framesCol);
 clc
 % cd('W:\splineFitter\RCC')
 
-coords(:,1) = locs(:,xCol);
-coords(:,2) = locs(:,yCol);
+coords(:,1) = locs(:,xCol)/pixelsize;
+coords(:,2) = locs(:,yCol)/pixelsize;
 coords(:,3) = locs(:,framesCol);
 
 %% 
@@ -57,12 +58,16 @@ tic
 
 %finaldrift = RCC_TS(filepath, 1000, 256, 160, 30, 0.2);
 
-segpara     = 500;
-imsize      = 256;
-pixelsize 	= 150;
+segpara     = 5000;
+imsize      = 293;
+pixelsize 	= 106;
 binsize     = 15;
 
-[coordscorr, finaldrift] = RCC(coords, segpara, imsize, pixelsize, binsize, 0.2);
+% [coordscorr, finaldrift] = RCC(coords, segpara, imsize, pixelsize, binsize, 0.2);
+
+% [coordscorr, finaldrift] = DCC(coords, segpara, imsize, pixelsize, binsize);
+
+[coordscorr, finaldrift] = MCC(coords, segpara, imsize, pixelsize, binsize);
 
 clc
 toc

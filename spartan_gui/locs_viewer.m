@@ -22,7 +22,7 @@ function varargout = locs_viewer(varargin)
 
 % Edit the above text to modify the response to help locs_viewer
 
-% Last Modified by GUIDE v2.5 04-Aug-2018 22:27:51
+% Last Modified by GUIDE v2.5 07-Aug-2018 22:11:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,10 +61,11 @@ handles.binsize     = 15;
 handles.imsize      = 512;
 handles.segpara     = 500;
 handles.format      = 'ThunderStorm';
+handles.method      = 'RCC';
 handles.pxlsizeVis  = 10;
 handles.locsFilt    = [];
 handles.locsDC      = [];
-handles.filtSig     = [50,250];
+handles.filtSig     = [100,250];
 handles.filtPhot    = 500;
 handles.filtUnc     = 25;
 handles.filtFrame   = 100;
@@ -383,9 +384,25 @@ coords(:,1) = handles.locs(:,handles.xCol)/handles.pxlsize;
 coords(:,2) = handles.locs(:,handles.yCol)/handles.pxlsize;
 coords(:,3) = handles.locs(:,handles.framesCol);
 
+if contains(handles.method,'DCC')==1;
+    
+fprintf('\n -- Starting DCC ... \n');
+
+[coordscorr, finaldrift] = DCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize);
+    
+elseif contains(handles.method,'MCC')==1;
+    
+fprintf('\n -- Starting MCC ... \n');
+
+[coordscorr, finaldrift] = MCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize);
+   
+else
+
 fprintf('\n -- Starting RCC ... \n');
 
 [coordscorr, finaldrift] = RCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize, 2);
+
+end
 
 figure('Position',[100 100 600 400],'Name', 'RCC dirft correction');
 subplot(2,1,1)
@@ -668,3 +685,32 @@ dlmwrite(savename,locsToSave,'-append');
 fclose('all');
 
 guidata(hObject, handles); % Update handles structure
+
+
+% --- Executes on selection change in method.
+function method_Callback(hObject, eventdata, handles)
+% hObject    handle to method (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns method contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from method
+
+handles.output = hObject;
+contents = cellstr(get(hObject,'String'));
+handles.method = contents{get(hObject,'Value')};
+fprintf(['\n ' handles.method ' selected \n']);
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function method_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to method (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
