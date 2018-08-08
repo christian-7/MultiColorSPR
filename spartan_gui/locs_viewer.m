@@ -385,7 +385,7 @@ coords(:,3) = handles.locs(:,handles.framesCol);
 
 fprintf('\n -- Starting RCC ... \n');
 
-[coordscorr, finaldrift] = RCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize, 0.2);
+[coordscorr, finaldrift] = RCC(coords, handles.segpara, handles.imsize, handles.pxlsize, handles.binsize, 2);
 
 figure('Position',[100 100 600 400],'Name', 'RCC dirft correction');
 subplot(2,1,1)

@@ -2,5 +2,6 @@
 tmp/
 example_data/
 functions/dependencies/
+functions/fit3Dcspline/
 .ipynb_checkpoints/
 *.asv
