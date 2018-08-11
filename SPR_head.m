@@ -199,7 +199,7 @@ function updates_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-web('https://github.com/christian-7/MultiColorSPR','-browser');
+web('https://github.com/christian-7/MultiColorSPR/wiki/Updates','-browser');
 
 
 % --------------------------------------------------------------------
@@ -216,7 +216,7 @@ function sample_data_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-web('https://zenodo.org/record/1127010#.WphXaBPwaRs','-browser');
+web('https://zenodo.org/record/1288783#.W26wztgzaRt','-browser');
 
 % --------------------------------------------------------------------
 function Untitled_19_Callback(hObject, eventdata, handles)
