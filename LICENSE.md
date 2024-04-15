@@ -1,4 +1,4 @@
-Copyright (c) 2017,  ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE,
+Copyright (c) 2017-2024,  ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE,
 Switzerland, Laboratory of Experimental Biophysics
 
 All rights reserved.
